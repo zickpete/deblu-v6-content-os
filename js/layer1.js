@@ -438,13 +438,16 @@ window.V6Layer1 = (function () {
         <div style="font-size:12px;color:#334155;">
           ${locked ? V6i18n.t('l1.footer.locked') : V6i18n.t('l1.footer.instruction')}
         </div>
+
         <div style="display:flex;gap:8px;">
           <button class="btn btn-secondary" id="resetPlanBtn" style="color:#ef4444;border-color:rgba(239,68,68,0.2);">
-            🔄 Reset & Start Over
+            ${V6i18n.t('l1.btn.reset')}
           </button>
+
           <button class="btn-factory ${locked ? 'btn-factory-locked' : ''}" id="sendToFactoryBtn" ${locked ? 'disabled' : ''}>
-            🚀 ${locked ? V6i18n.t('l1.btn.factory.sent') : V6i18n.t('l1.btn.factory.send')}
+            ${locked ? V6i18n.t('l1.btn.factory.sent') : V6i18n.t('l1.btn.factory.send')}
           </button>
+
         </div>
       </div>
     `;

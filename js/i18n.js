@@ -224,6 +224,10 @@ window.V6i18n = (function () {
     'l1.btn.lock':              { th: '🔒 ล็อกปฏิทิน',           en: '🔒 Lock Calendar' },
     'l1.btn.back':              { th: '🔙 กลับสู่ Layer 0',     en: '🔙 Back to Layer 0' },
     'l1.btn.factory.send':      { th: '🚀 ส่งเข้าโรงงานโพสต์',   en: '🚀 Send to Post Factory' },
+    'l1.btn.factory.sent':      { th: '✅ ส่งไปโรงงานโพสต์แล้ว',  en: '✅ Sent to Post Factory' },
+    'l1.btn.reset':             { th: '🔄 ล้างข้อมูล & เริ่มใหม่', en: '🔄 Reset & Start Over' },
+    'l1.footer.instruction':    { th: '💡 จัดตารางคอนเทนต์ให้เรียบร้อยก่อนส่งเข้าโรงงานโพสต์', en: '💡 Organize your content schedule before sending to the Post Factory' },
+    'l1.footer.locked':         { th: '🔒 ล็อกตารางแล้ว — ไม่สามารถแก้ไขผ่านหน้านี้ได้', en: '🔒 Schedule locked — Cannot be edited from this page' },
 
     /* ═══ LAYER 1 — MODAL ═══ */
     'l1.modal.status':          { th: '📊 สถานะ',                en: '📊 Status' },
