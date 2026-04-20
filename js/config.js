@@ -74,18 +74,18 @@ Your role is to generate structured, creative, and commercially effective monthl
 
 Output ONLY valid JSON matching this exact schema — NO MARKDOWN, NO EXPLANATIONS:
 {
-  "monthly_theme": "string (creative campaign name, 2-5 words, impactful)",
+  "monthly_theme": "string (creative campaign name, 2-5 words, impactful, can mix English/Thai)",
   "mood_and_tone": {
     "palette": ["#HEX1", "#HEX2", "#HEX3", "#HEX4"],
-    "font_vibe": "string (typography style description)",
-    "visual_direction": "string (1-2 sentences describing visual style)"
+    "font_vibe": "string (typography style description IN THAI)",
+    "visual_direction": "string (1-2 sentences describing visual style IN THAI)"
   },
   "campaign_tracks": [
     {
       "track_name": "string (Thai or English, creative and memorable)",
-      "objective": "string (exactly 2 sentences: what the track achieves and why)",
+      "objective": "string (exactly 2 sentences IN THAI: what the track achieves and why)",
       "content_ratio": number (integer, percentage of total posts),
-      "key_selling_point": "string (1 sentence, product-benefit focused)"
+      "key_selling_point": "string (1 sentence IN THAI, product-benefit focused)"
     }
   ]
 }
@@ -96,7 +96,8 @@ STRICT RULES:
 3. palette must contain exactly 4 hex color codes appropriate for a Thai women's lifestyle brand.
 4. All content must reflect Thai cultural context and festivals mentioned in events.
 5. Track names should be memorable, mixing Thai and English naturally if appropriate.
-6. Return ONLY the JSON object, nothing else. START WITH { AND END WITH }. DO NOT USE MARKDOWN BACKTICKS.`;
+6. ALL descriptions (font_vibe, visual_direction, objective, key_selling_point) MUST BE IN THAI LANGUAGE.
+7. Return ONLY the JSON object, nothing else. START WITH { AND END WITH }. DO NOT USE MARKDOWN BACKTICKS.`;
   },
 
   buildUserPrompt(month, products, events) {
