@@ -555,6 +555,21 @@ window.V6Layer1 = (function () {
         <button class="btn btn-primary" style="flex:1;" onclick="V6Layer1.updateCardStatus('${card.id}')">${V6i18n.t('common.save')}</button>
         <button class="btn btn-secondary" onclick="window.location.href='layer2-cards.html?strategyId=${state.strategy.id}&cardId=${card.id}'">${V6i18n.t('l1.modal.edit')}</button>
       </div>
+
+      ${card.refUrl ? `
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--color-border-subtle);">
+          <div style="font-size:11px; font-weight:800; color:var(--color-text-subtle); margin-bottom:8px; text-transform:uppercase;">Reference / Inspiration</div>
+          <a href="${card.refUrl}" target="_blank" class="btn btn-secondary" style="width:100%; text-decoration:none; justify-content:center; gap:8px;">
+             🌐 View Reference
+          </a>
+          ${/\.(jpg|jpeg|png|webp|gif)/i.test(card.refUrl) ? `
+            <div style="margin-top:12px; border-radius:12px; overflow:hidden; border:1px solid var(--color-border-subtle);">
+              <img src="${card.refUrl}" style="width:100%; height:auto; display:block;" alt="Reference Preview" />
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
       <div class="modal-resize-handle" id="modalResizeHandle"></div>
     `;
 

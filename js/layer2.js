@@ -150,6 +150,7 @@ window.V6Layer2 = (function () {
     $('editorHeadline').value = card.meta_headline || '';
     $('editorCaption').value = card.meta_caption || '';
     $('editorHashtags').value = card.meta_hashtags || '';
+    if ($('editorRefUrl')) $('editorRefUrl').value = card.refUrl || '';
 
     // Auto-resize caption initially
     autoResize($('editorCaption'));
@@ -175,6 +176,7 @@ window.V6Layer2 = (function () {
       meta_headline: $('editorHeadline').value,
       meta_caption: $('editorCaption').value,
       meta_hashtags: $('editorHashtags').value,
+      refUrl: $('editorRefUrl') ? $('editorRefUrl').value : '',
     };
     
     // Status handles differently to avoid immediate state jump if not expected, 
