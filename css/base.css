@@ -840,7 +840,7 @@ body {
   transform: translate(-50%, -50%) scale(1);
 }
 
-body.modal-active > *:not(#apiKeyModal):not(#modalOverlay):not(.toast) {
+body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.toast) {
   filter: blur(8px);
   transition: filter 0.3s ease;
 }

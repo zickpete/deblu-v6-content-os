@@ -59,7 +59,7 @@ class V6Header extends HTMLElement {
             <span class="ai-dot mock" id="aiDot" aria-hidden="true"></span>
             <span id="aiLabel" data-i18n="common.demo">COMMON.DEMO</span>
           </div>
-          <button class="btn btn-secondary" id="dbBtn" style="font-size:12px;padding:8px 16px;" title="Product Database" data-i18n="header.database">
+          <button class="btn btn-secondary" id="dbBtn" style="font-size:12px;padding:8px 16px;" title="Product Database">
             📦 ราคาสินค้า
           </button>
           <button class="btn btn-secondary" id="apiKeyBtn" style="font-size:12px;padding:8px 16px;" title="Configure AI API Key" data-i18n="header.settings">
