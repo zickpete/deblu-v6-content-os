@@ -28,10 +28,11 @@ class V6Header extends HTMLElement {
 
     this.innerHTML = `
       <header class="app-header" role="banner">
-        <a href="index.html" class="app-logo" aria-label="V.6 Content OS Home">
-          <div class="app-logo-icon" aria-hidden="true">📅</div>
-          <span class="app-logo-text">Content OS</span>
-          <span class="app-logo-version">V.6</span>
+        <a href="index.html" class="app-logo" aria-label="BAM OS v.6.1 Home">
+          <div class="app-logo-icon" aria-hidden="true">🧸</div>
+          <span class="app-logo-text">BAM OS</span>
+          <span class="app-logo-version">v.6.1</span>
+
           <div class="sync-status-dot" id="syncStatusDot" title="Sync Status: Connecting..."></div>
         </a>
 
