@@ -504,7 +504,7 @@ function initGlobalApiKeyModal() {
             generationConfig: { temperature: 0.1, maxOutputTokens: 10 }
           };
 
-          const res = await window.V6AI.safeFetch(url, {
+          const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
