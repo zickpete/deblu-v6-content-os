@@ -110,15 +110,19 @@ window.V6Layer1 = (function () {
       </div>
     `;
 
-    // Apply saved size immediately
+    // Apply saved size/zoom immediately
+    const zoomVal = (parseInt(savedSize) || 140) / 140;
     document.documentElement.style.setProperty('--card-min-h', savedSize + 'px');
+    document.documentElement.style.setProperty('--app-zoom', zoomVal.toFixed(2));
 
     // Bind slider
     const slider = $('cardSizeSlider');
     if (slider) {
       slider.addEventListener('input', (e) => {
         const val = e.target.value;
+        const zoomVal = parseInt(val) / 140;
         document.documentElement.style.setProperty('--card-min-h', val + 'px');
+        document.documentElement.style.setProperty('--app-zoom', zoomVal.toFixed(2));
         localStorage.setItem('v6_card_size', val);
       });
     }

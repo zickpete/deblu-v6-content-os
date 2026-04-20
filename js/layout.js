@@ -290,8 +290,12 @@ const AI_MODAL_HTML = `
           type="text"
           id="teamSyncIdInput"
           placeholder="Enter Team ID..."
-          style="font-family:monospace; font-weight:bold; letter-spacing:1px; text-transform:uppercase;"
+          style="font-family:monospace; font-weight:bold; letter-spacing:1px; text-transform:uppercase; font-size:16px !important;"
           autocomplete="off"
+          autocorrect="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          inputmode="text"
         />
         <button class="btn btn-secondary" id="copyTeamIdBtn" title="Copy ID" style="padding:8px 12px;">📋</button>
       </div>

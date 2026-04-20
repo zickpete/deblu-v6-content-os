@@ -55,6 +55,8 @@
   /* Transitions */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Zoom Control */
+  --app-zoom: 1;
 }
 
 [data-theme="light"] {
@@ -947,4 +949,68 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
 }
 .auth-btn-label {
   letter-spacing: 0.03em;
+}
+/* ─── Mobile Responsiveness ─── */
+@media (max-width: 768px) {
+  .app-header {
+    height: auto;
+    padding: 12px 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .header-nav {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 4px;
+    gap: 4px;
+  }
+
+  .header-nav .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .header-nav .btn span:not(.btn-icon) {
+    display: none; /* Hide labels on very small screens */
+  }
+
+  /* But show short labels if there's space */
+  @media (min-width: 480px) {
+    .header-nav .btn span:not(.btn-icon) {
+      display: inline;
+    }
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .app-logo-text { font-size: 16px; }
+}
+
+/* ─── Proportional Zoom ─── */
+.cal-slot {
+  min-height: calc(140px * var(--app-zoom)) !important;
+}
+
+.content-card {
+  transform-origin: top left;
+  zoom: var(--app-zoom); /* Modern approach for proportional scaling */
+}
+
+/* Fallback for browsers that don't support zoom property nicely */
+@supports not (zoom: 1) {
+  .content-card {
+    transform: scale(var(--app-zoom));
+    width: calc(100% / var(--app-zoom));
+  }
+}
+
+.card-vibe-bubble, 
+.card-idea, 
+.card-caption-preview {
+  /* Ensure text scales with zoom if needed, though zoom: prop handles this */
 }
