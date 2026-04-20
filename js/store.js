@@ -9,6 +9,7 @@ window.V6Store = (function () {
   const API_KEY_KEY   = 'v6_settings_apiKey';
   const MODEL_KEY     = 'v6_gemini_model';
   const THINKING_KEY  = 'v6_deep_thinking';
+  const PRODUCT_REF_KEY = 'v6_product_reference';
 
   /* ─── Helpers ─── */
   function generateId() {
@@ -272,6 +273,29 @@ window.V6Store = (function () {
     return localStorage.getItem(THINKING_KEY) === 'true';
   }
 
+  /* ─── Product Reference / Price List ─── */
+  function saveProductReference(text) {
+    localStorage.setItem(PRODUCT_REF_KEY, text || '');
+  }
+  function getProductReference() {
+    return localStorage.getItem(PRODUCT_REF_KEY) || '';
+  }
+
+  /* ─── Reset Calendar Plan (Start Over) ─── */
+  function resetCalendarPlan() {
+    // Clear all calendars
+    localStorage.removeItem(CALENDAR_KEY);
+    // Reset all strategies to draft (unlock)
+    const all = getAll();
+    all.forEach(s => {
+      s.status = 'draft';
+      delete s.calendar_locked;
+      delete s.calendar_locked_at;
+    });
+    saveAll(all);
+    console.log('[V6Store] 🔄 Calendar plan reset — ready for new strategy');
+  }
+
   /* ─── Export ─── */
   function exportJSON(id) {
     const strategy = id ? getById(id) : list()[0];
@@ -316,7 +340,8 @@ window.V6Store = (function () {
     saveApiKey, getApiKey, clearApiKey,
     saveLayerModels, getLayerModels,
     saveGeminiModel, getGeminiModel, saveDeepThinkingMode, getDeepThinkingMode,
+    saveProductReference, getProductReference,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
-    initStorageListener,
+    resetCalendarPlan, initStorageListener,
   };
 })();

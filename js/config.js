@@ -65,10 +65,16 @@ window.V6_CONFIG = {
 
   /* ─── System Prompt Template ─── */
   buildSystemPrompt() {
+    // Pull compact product knowledge base from localStorage
+    const productRef = (typeof V6Store !== 'undefined') ? V6Store.getProductReference() : '';
+    const productContext = productRef
+      ? `\n\n【PRODUCT KNOWLEDGE BASE】\n${productRef}\n\nPRODUCT RULES:\n- Model names starting with "M" = Men's Shoes (รองเท้าผู้ชาย)\n- Model names starting with "L" = Women's Shoes (รองเท้าผู้หญิง)\n- Always use the EXACT prices provided in the Product Reference above. Do NOT hallucinate or invent prices.\n- Reference specific model names and prices when creating content strategies.`
+      : '';
+
     return `You are the Senior Content Strategist AI for ${this.brand} (${this.brandThai}), a Thai footwear brand.
 Brand positioning: ${this.tagline}
 Primary target audience: ${this.targetAudience}
-Content Pillars: ${this.pillars.map(p => p.label).join(", ")}
+Content Pillars: ${this.pillars.map(p => p.label).join(", ")}${productContext}
 
 Your role is to generate structured, creative, and commercially effective monthly content campaign strategies for social media (Facebook, Instagram, TikTok).
 

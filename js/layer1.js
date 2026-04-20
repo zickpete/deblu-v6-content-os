@@ -415,9 +415,14 @@ window.V6Layer1 = (function () {
         <div style="font-size:12px;color:#334155;">
           ${locked ? V6i18n.t('l1.footer.locked') : V6i18n.t('l1.footer.instruction')}
         </div>
-        <button class="btn-factory ${locked ? 'btn-factory-locked' : ''}" id="sendToFactoryBtn" ${locked ? 'disabled' : ''}>
-          🚀 ${locked ? V6i18n.t('l1.btn.factory.sent') : V6i18n.t('l1.btn.factory.send')}
-        </button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" id="resetPlanBtn" style="color:#ef4444;border-color:rgba(239,68,68,0.2);">
+            🔄 Reset & Start Over
+          </button>
+          <button class="btn-factory ${locked ? 'btn-factory-locked' : ''}" id="sendToFactoryBtn" ${locked ? 'disabled' : ''}>
+            🚀 ${locked ? V6i18n.t('l1.btn.factory.sent') : V6i18n.t('l1.btn.factory.send')}
+          </button>
+        </div>
       </div>
     `;
 
@@ -427,6 +432,21 @@ window.V6Layer1 = (function () {
     if (factoryBtn && !locked) {
       factoryBtn.addEventListener('click', onSendToFactory);
     }
+    
+    const resetBtn = $('resetPlanBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', onResetPlan);
+    }
+  }
+
+  /* ─── Reset Plan ─── */
+  function onResetPlan() {
+    if (!confirm('⚠️ Are you sure you want to reset the calendar plan? This will clear all current scheduled posts and unlock the strategy.')) return;
+    V6Store.resetCalendarPlan();
+    toast('🔄 Calendar reset. Redirecting...', 'info', 2000);
+    setTimeout(() => {
+      window.location.href = 'layer0-brain.html';
+    }, 1000);
   }
 
   /* ─── Send to Factory ─── */

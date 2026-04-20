@@ -256,6 +256,21 @@ const AI_MODAL_HTML = `
       <button class="btn btn-primary" id="saveApiKeyBtn" style="flex:1;" data-i18n="modal.ai.save">💾 บันทึก Key</button>
       <button class="btn btn-secondary" id="clearApiKeyBtn" data-i18n="modal.ai.clear">🗑 ลบ</button>
     </div>
+
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label" for="productRefInput">📦 ข้อมูลสินค้า / Price List (Product Reference)</label>
+      <textarea
+        class="form-input"
+        id="productRefInput"
+        rows="6"
+        placeholder="วางข้อมูลสินค้า รหัสรุ่น ราคา ที่นี่... เช่น:\nL5623 รองเท้าผู้หญิง ราคา 990 บาท\nM8001 รองเท้าผู้ชาย ราคา 1,290 บาท"
+        style="font-size:12px;line-height:1.6;resize:vertical;min-height:100px;"
+      ></textarea>
+      <div style="margin-top:6px;font-size:11px;color:#334155;line-height:1.6;">
+        📌 AI จะใช้ข้อมูลนี้เป็น Knowledge Base ในทุกการสร้าง Content<br/>
+        🔠 รหัสขึ้นต้นด้วย M = รองเท้าผู้ชาย, L = รองเท้าผู้หญิง
+      </div>
+    </div>
   </div>
 `;
 
@@ -281,6 +296,7 @@ function initGlobalApiKeyModal() {
     const keyInput   = document.getElementById('apiKeyInput');
     const testBtn    = document.getElementById('apiTesterBtn');
     const testFbk    = document.getElementById('apiTesterFeedback');
+    const productRef = document.getElementById('productRefInput');
     
     // Layer Mapping UI
     const triggers   = document.querySelectorAll('.layer-model-trigger');
@@ -321,6 +337,7 @@ function initGlobalApiKeyModal() {
       });
       
       if (deepToggle) deepToggle.checked = window.V6Store.getDeepThinkingMode();
+      if (productRef) productRef.value = window.V6Store.getProductReference();
 
       modal.classList.add('open');
       if(overlay) overlay.classList.add('open');
@@ -572,6 +589,11 @@ function initGlobalApiKeyModal() {
         } else {
           window.V6Store.clearApiKey();
           showToast('✅ Demo Mode active', 'info');
+        }
+
+        // Save Product Reference
+        if (productRef) {
+          window.V6Store.saveProductReference(productRef.value.trim());
         }
 
         // 2. Broadcast to all layers (Tabs)
