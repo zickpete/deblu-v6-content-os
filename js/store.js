@@ -1,6 +1,7 @@
 /* ================================================
    V.6 Content OS — Store (Dual-Write State Manager)
-   localStorage (cache) + Firestore (cloud sync)
+   localStorage (cache) + Firestore (shared cloud sync)
+   No authentication required
    ================================================ */
 
 window.V6Store = (function () {
@@ -23,18 +24,16 @@ window.V6Store = (function () {
 
   /* ─── Firestore Helpers ─── */
   function isFirebaseReady() {
-    return !!(window.V6Firebase && V6Firebase.getUid());
+    return !!(window.V6Firebase && V6Firebase.isReady);
   }
 
   /** Write to Firestore (fire-and-forget, non-blocking) */
   function fsWrite(collection, docId, data) {
     if (!isFirebaseReady()) return;
     try {
-      const ref = V6Firebase.userDoc(collection, docId);
-      if (ref) {
-        ref.set(data, { merge: true })
-          .catch(err => console.warn('[V6Store] Firestore write failed:', err.message));
-      }
+      V6Firebase.sharedDoc(collection, docId)
+        .set(data, { merge: true })
+        .catch(err => console.warn('[V6Store] Firestore write failed:', err.message));
     } catch (e) {
       console.warn('[V6Store] Firestore write error:', e.message);
     }
@@ -44,11 +43,9 @@ window.V6Store = (function () {
   function fsDelete(collection, docId) {
     if (!isFirebaseReady()) return;
     try {
-      const ref = V6Firebase.userDoc(collection, docId);
-      if (ref) {
-        ref.delete()
-          .catch(err => console.warn('[V6Store] Firestore delete failed:', err.message));
-      }
+      V6Firebase.sharedDoc(collection, docId)
+        .delete()
+        .catch(err => console.warn('[V6Store] Firestore delete failed:', err.message));
     } catch (e) {
       console.warn('[V6Store] Firestore delete error:', e.message);
     }
@@ -132,10 +129,7 @@ window.V6Store = (function () {
     if (idx === -1) { console.warn('[V6Store] Strategy not found:', id); return null; }
     all[idx] = { ...all[idx], ...changes, updated_at: new Date().toISOString() };
     saveAll(all);
-
-    // Cloud sync: update single doc
     fsWrite('strategies', id, all[idx]);
-
     console.log('[V6Store] Strategy updated:', all[idx]);
     return all[idx];
   }
@@ -173,10 +167,7 @@ window.V6Store = (function () {
     const all = getAllCalendars();
     all[strategyId] = cards;
     saveAllCalendars(all);
-
-    // Cloud sync: save calendar doc
     fsWrite('calendars', strategyId, { cards: cards, updated_at: new Date().toISOString() });
-
     console.log('[V6Store] Calendar saved for', strategyId, '—', cards.length, 'cards');
     return cards;
   }
@@ -193,10 +184,7 @@ window.V6Store = (function () {
     cards[idx] = { ...cards[idx], ...changes, updated_at: new Date().toISOString() };
     all[strategyId] = cards;
     saveAllCalendars(all);
-
-    // Cloud sync: update full calendar doc (cards array)
     fsWrite('calendars', strategyId, { cards: cards, updated_at: new Date().toISOString() });
-
     return cards[idx];
   }
 
@@ -206,10 +194,7 @@ window.V6Store = (function () {
     const filtered = cards.filter(c => c.id !== cardId);
     all[strategyId] = filtered;
     saveAllCalendars(all);
-
-    // Cloud sync
     fsWrite('calendars', strategyId, { cards: filtered, updated_at: new Date().toISOString() });
-
     console.log('[V6Store] Card deleted:', cardId, 'from strategy:', strategyId);
     return true;
   }
@@ -293,7 +278,6 @@ window.V6Store = (function () {
         const row = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
         while (row.length < 18) row.push('');
 
-        // Block 1
         const m1 = row[0];
         if (m1 && m1 !== 'NUMBER' && m1 !== 'SS' && /[a-zA-Z]/.test(m1)) {
             let p1 = row[7];
@@ -305,7 +289,6 @@ window.V6Store = (function () {
             }
         }
 
-        // Block 2
         const m2 = row[10];
         if (m2 && m2 !== 'NUMBER' && m2 !== 'SS' && /[a-zA-Z]/.test(m2)) {
             let p2 = row[17];
@@ -344,9 +327,9 @@ window.V6Store = (function () {
     });
     saveAll(all);
 
-    // Cloud sync: remove all calendars (best-effort)
+    // Cloud sync: remove all calendars
     if (isFirebaseReady()) {
-      const col = V6Firebase.userCollection('calendars');
+      const col = V6Firebase.sharedCollection('calendars');
       if (col) {
         col.get().then(snap => {
           snap.forEach(doc => doc.ref.delete());
@@ -371,8 +354,8 @@ window.V6Store = (function () {
   }
 
   /* ═══════════════════════════════════════════════════════
-     FIRESTORE REAL-TIME SYNC
-     Sets up listeners that push cloud changes → localStorage
+     FIRESTORE REAL-TIME SYNC (Shared Mode)
+     Listeners push cloud changes → localStorage
      ═══════════════════════════════════════════════════════ */
 
   let _unsubStrategies = null;
@@ -382,13 +365,13 @@ window.V6Store = (function () {
 
   function initFirestoreSync() {
     if (!isFirebaseReady()) return;
-    console.log('[V6Store] 🔄 Setting up Firestore real-time sync...');
+    console.log('[V6Store] 🔄 Setting up Firestore real-time sync (shared mode)...');
 
     // --- Strategies listener ---
-    const stratCol = V6Firebase.userCollection('strategies');
+    const stratCol = V6Firebase.sharedCollection('strategies');
     if (stratCol && !_unsubStrategies) {
       _unsubStrategies = stratCol.onSnapshot((snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return; // skip local writes
+        if (snapshot.metadata.hasPendingWrites) return;
         const cloudStrategies = [];
         snapshot.forEach(doc => cloudStrategies.push(doc.data()));
         if (cloudStrategies.length > 0) {
@@ -400,7 +383,7 @@ window.V6Store = (function () {
     }
 
     // --- Calendars listener ---
-    const calCol = V6Firebase.userCollection('calendars');
+    const calCol = V6Firebase.sharedCollection('calendars');
     if (calCol && !_unsubCalendars) {
       _unsubCalendars = calCol.onSnapshot((snapshot) => {
         if (snapshot.metadata.hasPendingWrites) return;
@@ -418,7 +401,7 @@ window.V6Store = (function () {
     }
 
     // --- Settings listener ---
-    const settingsRef = V6Firebase.userDoc('settings', 'main');
+    const settingsRef = V6Firebase.sharedDoc('settings', 'main');
     if (settingsRef && !_unsubSettings) {
       _unsubSettings = settingsRef.onSnapshot((doc) => {
         if (!doc.exists || doc.metadata.hasPendingWrites) return;
@@ -432,7 +415,7 @@ window.V6Store = (function () {
     }
 
     // --- Product Reference listener ---
-    const productsRef = V6Firebase.userDoc('settings', 'products');
+    const productsRef = V6Firebase.sharedDoc('settings', 'products');
     if (productsRef && !_unsubProducts) {
       _unsubProducts = productsRef.onSnapshot((doc) => {
         if (!doc.exists || doc.metadata.hasPendingWrites) return;
@@ -443,51 +426,35 @@ window.V6Store = (function () {
     }
   }
 
-  /** Migrate existing localStorage data → Firestore (one-time on first sign-in) */
+  /** One-time upload of localStorage data → Firestore */
   async function migrateToCloud() {
     if (!isFirebaseReady()) return;
-
     const migrated = localStorage.getItem('v6_firebase_migrated');
-    if (migrated) {
-      console.log('[V6Store] Already migrated to cloud — skipping');
-      return;
-    }
+    if (migrated) return;
 
     console.log('[V6Store] 🚚 Migrating localStorage → Firestore...');
-
     try {
-      // Migrate strategies
       const strategies = getAll();
       for (const s of strategies) {
-        await V6Firebase.userDoc('strategies', s.id).set(s);
+        await V6Firebase.sharedDoc('strategies', s.id).set(s);
       }
-
-      // Migrate calendars
       const calendars = getAllCalendars();
       for (const [stratId, cards] of Object.entries(calendars)) {
-        await V6Firebase.userDoc('calendars', stratId).set({ cards, updated_at: new Date().toISOString() });
+        await V6Firebase.sharedDoc('calendars', stratId).set({ cards, updated_at: new Date().toISOString() });
       }
-
-      // Migrate settings
       const apiKey = getApiKey();
       const models = getLayerModels();
       const deep = getDeepThinkingMode();
-      await V6Firebase.userDoc('settings', 'main').set({
-        apiKey: apiKey || '',
-        layerModels: models,
-        deepThinking: deep,
+      await V6Firebase.sharedDoc('settings', 'main').set({
+        apiKey: apiKey || '', layerModels: models, deepThinking: deep,
         updated_at: new Date().toISOString()
       });
-
-      // Migrate product reference
       const productRef = localStorage.getItem(PRODUCT_REF_KEY);
       if (productRef) {
-        await V6Firebase.userDoc('settings', 'products').set({
-          text: productRef,
-          updated_at: new Date().toISOString()
+        await V6Firebase.sharedDoc('settings', 'products').set({
+          text: productRef, updated_at: new Date().toISOString()
         });
       }
-
       localStorage.setItem('v6_firebase_migrated', new Date().toISOString());
       console.log('[V6Store] ✅ Migration complete!');
     } catch (err) {
@@ -495,16 +462,7 @@ window.V6Store = (function () {
     }
   }
 
-  /** Stop all Firestore listeners */
-  function stopFirestoreSync() {
-    if (_unsubStrategies) { _unsubStrategies(); _unsubStrategies = null; }
-    if (_unsubCalendars)  { _unsubCalendars();  _unsubCalendars = null; }
-    if (_unsubSettings)   { _unsubSettings();   _unsubSettings = null; }
-    if (_unsubProducts)   { _unsubProducts();   _unsubProducts = null; }
-    console.log('[V6Store] Firestore listeners stopped');
-  }
-
-  /* ─── Cross-tab Sync (legacy, still works) ─── */
+  /* ─── Cross-tab Sync (legacy) ─── */
   function initStorageListener() {
     window.addEventListener('storage', (e) => {
       if (e.key === 'v6_settings') {
@@ -523,18 +481,11 @@ window.V6Store = (function () {
   if (typeof window !== 'undefined') {
     initStorageListener();
 
-    // When Firebase auth is ready, start sync
+    // When Firebase is ready, migrate & start sync
     window.addEventListener('v6:firebaseReady', () => {
       migrateToCloud().then(() => {
         initFirestoreSync();
       });
-    });
-
-    // When user signs out, stop listeners
-    window.addEventListener('v6:authChanged', (e) => {
-      if (!e.detail.user) {
-        stopFirestoreSync();
-      }
     });
   }
 
@@ -546,6 +497,6 @@ window.V6Store = (function () {
     saveProductReference, getProductReference, parseProductCSV,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
     resetCalendarPlan, initStorageListener,
-    initFirestoreSync, migrateToCloud, stopFirestoreSync,
+    initFirestoreSync, migrateToCloud,
   };
 })();

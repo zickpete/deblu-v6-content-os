@@ -65,11 +65,6 @@ class V6Header extends HTMLElement {
           <button class="btn btn-secondary" id="apiKeyBtn" style="font-size:12px;padding:8px 16px;" title="Configure AI API Key" data-i18n="header.settings">
             ⚙️ ตั้งค่า (Settings)
           </button>
-          <!-- Firebase Auth Button -->
-          <button class="auth-btn" id="authBtn" title="Sign In with Google">
-            <span class="auth-btn-icon" id="authIcon">🔑</span>
-            <span class="auth-btn-label" id="authLabel" data-i18n="header.signin">Sign In</span>
-          </button>
         </div>
       </header>
     `;
@@ -172,70 +167,6 @@ class V6Header extends HTMLElement {
       });
       
       updateHeaderBadge(); // Initial state
-
-      // ─── Firebase Auth Button Logic ───
-      const authBtn   = this.querySelector('#authBtn');
-      const authIcon  = this.querySelector('#authIcon');
-      const authLabel = this.querySelector('#authLabel');
-
-      const updateAuthUI = (user) => {
-        if (!authBtn) return;
-        if (user) {
-          // Signed in → show avatar + name
-          const photoURL = user.photoURL;
-          const name = user.displayName || user.email || 'User';
-          if (photoURL) {
-            authIcon.innerHTML = `<img src="${photoURL}" alt="" style="width:20px;height:20px;border-radius:50%;">`;
-          } else {
-            authIcon.textContent = '👤';
-          }
-          authLabel.textContent = name.split(' ')[0]; // First name only
-          authLabel.removeAttribute('data-i18n');
-          authBtn.classList.add('signed-in');
-          authBtn.title = `Signed in as ${user.email} — Click to sign out`;
-        } else {
-          // Not signed in
-          authIcon.textContent = '🔑';
-          const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
-          authLabel.textContent = lang === 'th' ? 'เข้าสู่ระบบ' : 'Sign In';
-          authLabel.setAttribute('data-i18n', 'header.signin');
-          authBtn.classList.remove('signed-in');
-          authBtn.title = 'Sign in with Google to sync across devices';
-        }
-      };
-
-      if (authBtn) {
-        authBtn.addEventListener('click', async () => {
-          if (!window.V6Firebase) return;
-          const user = V6Firebase.getUser();
-          if (user) {
-            // Already signed in → confirm sign out
-            const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
-            const msg = lang === 'th' ? 'ต้องการออกจากระบบหรือไม่?' : 'Sign out?';
-            if (confirm(msg)) {
-              await V6Firebase.signOut();
-            }
-          } else {
-            // Sign in
-            try {
-              await V6Firebase.signIn();
-            } catch (err) {
-              console.error('[Auth] Sign-in failed:', err);
-            }
-          }
-        });
-      }
-
-      // Listen for auth state changes
-      window.addEventListener('v6:authChanged', (e) => {
-        updateAuthUI(e.detail.user);
-      });
-
-      // Set initial auth state
-      if (window.V6Firebase) {
-        updateAuthUI(V6Firebase.getUser());
-      }
-
     }, 0);
   }
 }
