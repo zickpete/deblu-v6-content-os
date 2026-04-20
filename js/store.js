@@ -19,8 +19,18 @@ window.V6Store = (function () {
 
   function fsUpdate(field, data) {
     if (!isFirebaseReady()) return;
-    V6Firebase.getTeamDoc().set({ [field]: data, updated_at: new Date().toISOString() }, { merge: true })
-      .catch(err => console.warn('[V6Store] Cloud Update Fail:', err.message));
+    // Use dot notation for settings to avoid overwriting the whole object
+    if (field === 'settings') {
+      const updates = { updated_at: new Date().toISOString() };
+      for (const key in data) {
+        updates[`settings.${key}`] = data[key];
+      }
+      V6Firebase.getTeamDoc().update(updates)
+        .catch(err => console.warn('[V6Store] Settings Cloud Update Fail:', err.message));
+    } else {
+      V6Firebase.getTeamDoc().set({ [field]: data, updated_at: new Date().toISOString() }, { merge: true })
+        .catch(err => console.warn('[V6Store] Cloud Update Fail:', err.message));
+    }
   }
 
   /* ─── LocalStorage Access ─── */
@@ -201,12 +211,31 @@ window.V6Store = (function () {
     
     if (strategies.length > 0 || Object.keys(calendars).length > 0 || apiKey) {
       console.log('[V6Store] 🚚 Pushing Local State to Cloud Room:', teamId);
-      await V6Firebase.getTeamDoc().set({
-        strategies, calendars, products: getProductReference(),
-        settings: { apiKey: apiKey || '', layerModels: getLayerModels(), deepThinking: getDeepThinkingMode() },
+      const payload = {
+        strategies,
+        calendars,
+        products: getProductReference(),
         updated_at: new Date().toISOString()
-      }, { merge: true });
+      };
+      // Only push apiKey if we actually have one locally to avoid wiping cloud key
+      if (apiKey) {
+        payload['settings.apiKey'] = apiKey;
+      }
+      payload['settings.layerModels'] = getLayerModels();
+      payload['settings.deepThinking'] = getDeepThinkingMode();
+
+      await V6Firebase.getTeamDoc().update(payload).catch(async (err) => {
+        // If document doesn't exist, use set instead
+        if (err.code === 'not-found' || err.message.includes('no document')) {
+          await V6Firebase.getTeamDoc().set({
+            strategies, calendars, products: getProductReference(),
+            settings: { apiKey: apiKey || '', layerModels: getLayerModels(), deepThinking: getDeepThinkingMode() },
+            updated_at: new Date().toISOString()
+          });
+        }
+      });
     }
+
     localStorage.setItem(flagKey, new Date().toISOString());
   }
 
