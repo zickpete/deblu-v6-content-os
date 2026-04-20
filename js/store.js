@@ -224,7 +224,6 @@ window.V6Store = (function () {
   }
 
   /* ─── API Key Management ─── */
-  const API_KEY_KEY = 'v6_settings_apiKey';
 
   function saveApiKey(key) {
     localStorage.setItem(API_KEY_KEY, key);
