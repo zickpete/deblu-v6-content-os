@@ -190,6 +190,10 @@
   background: var(--color-surface-glass);
   border-bottom: 1px solid var(--color-border-subtle);
 }
+@media (max-width: 768px) {
+  .cal-header-row { display: none; }
+}
+
 .cal-header-cell {
   padding: 10px 0;
   text-align: center;
@@ -203,11 +207,19 @@
 
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr); /* 7 columns for 7 weekdays */
+  grid-template-columns: repeat(7, 1fr); /* Default desktop */
   gap: 10px;
   background: transparent;
   padding: 16px;
   border: 1px solid var(--color-border-subtle);
+}
+
+@media (max-width: 768px) {
+  .cal-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 16px;
+    padding: 12px;
+  }
 }
 .cal-cell {
   background: var(--color-surface-glass-heavy);
@@ -770,3 +782,37 @@
 .cal-cell {
   height: auto;
 }
+
+/* ─── Mobile Critical Fix ─── */
+@media (max-width: 768px) {
+  .cal-header-row {
+    display: none !important; /* Hide Mon-Sun row */
+  }
+
+  .cal-grid, .cal-skeleton {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important; /* Force 1 column */
+    gap: 16px !important;
+    padding: 12px !important;
+  }
+
+  .cal-cell {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 12px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .content-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    transform: none !important; /* Reset any legacy transforms */
+  }
+
+  .cal-slot {
+    width: 100% !important;
+  }
+}
+

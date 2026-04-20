@@ -33,7 +33,7 @@ window.V6Layer2 = (function () {
     try {
       const params = new URLSearchParams(window.location.search);
       // Data Bridge: Priority Check
-      const bridgedCard = localStorage.getItem('v6_edit_card_data');
+      const bridgedCard = localStorage.getItem('editCardData');
       const bridgedStrat = localStorage.getItem('v6_edit_strategy_data');
 
       if (bridgedCard && bridgedStrat) {

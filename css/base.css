@@ -979,9 +979,9 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
 
   .header-nav .btn {
     flex: 1 1 auto;
-    min-width: 100px;
-    padding: 10px 14px;
-    font-size: 13px;
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
   /* Force vertical list on mobile for Calendar */
@@ -1020,7 +1020,13 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
   .container-hub {
     padding: 12px;
   }
+
+  /* Prevent any item from pushing width */
+  * {
+    max-width: 100%;
+  }
 }
+
 
 /* ─── Advanced Proportional Scaling ─── */
 .content-card {

@@ -514,7 +514,7 @@ window.V6Layer1 = (function () {
     if (!card) return;
 
     // Data Bridge: Save full card to local for Layer 2
-    localStorage.setItem('v6_edit_card_data', JSON.stringify(card));
+    localStorage.setItem('editCardData', JSON.stringify(card));
     localStorage.setItem('v6_edit_strategy_data', JSON.stringify(state.strategy));
 
     const modal = $('cardDetailModal');
