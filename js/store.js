@@ -277,8 +277,57 @@ window.V6Store = (function () {
   function saveProductReference(text) {
     localStorage.setItem(PRODUCT_REF_KEY, text || '');
   }
+
+  function parseProductCSV(csvStr) {
+    if (!csvStr) return '';
+    const lines = csvStr.split(/\r?\n/);
+    const models = {};
+
+    for (let i = 0; i < lines.length; i++) {
+        // Simple CSV split (not handling complex quotes, but enough for this format)
+        const row = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        while (row.length < 18) row.push('');
+        
+        // Block 1
+        const m1 = row[0];
+        if (m1 && m1 !== 'NUMBER' && m1 !== 'SS' && /[a-zA-Z]/.test(m1)) {
+            let p1 = row[7]; // ราคาป้าย
+            if (!p1) p1 = row[3]; // Fallback
+            if (!p1) p1 = row[4]; // Fallback
+            if (p1) p1 = p1.replace(/,/g, '');
+            if (p1 && !isNaN(parseInt(p1))) {
+                models[m1] = p1;
+            }
+        }
+        
+        // Block 2
+        const m2 = row[10];
+        if (m2 && m2 !== 'NUMBER' && m2 !== 'SS' && /[a-zA-Z]/.test(m2)) {
+            let p2 = row[17]; // ราคาป้าย
+            if (!p2) p2 = row[13]; // Fallback
+            if (!p2) p2 = row[14]; // Fallback
+            if (p2) p2 = p2.replace(/,/g, '');
+            if (p2 && !isNaN(parseInt(p2))) {
+                models[m2] = p2;
+            }
+        }
+    }
+    
+    // Generate clean markdown string
+    return Object.entries(models).map(([m, p]) => `${m} ราคา ${p} บาท`).join('\\n');
+  }
+
   function getProductReference() {
-    return localStorage.getItem(PRODUCT_REF_KEY) || '';
+    let saved = localStorage.getItem(PRODUCT_REF_KEY);
+    if (!saved) {
+      // Fallback to default CSV
+      if (typeof V6_DEFAULT_CSV !== 'undefined') {
+        saved = parseProductCSV(V6_DEFAULT_CSV);
+      } else {
+        saved = '';
+      }
+    }
+    return saved;
   }
 
   /* ─── Reset Calendar Plan (Start Over) ─── */
@@ -340,7 +389,7 @@ window.V6Store = (function () {
     saveApiKey, getApiKey, clearApiKey,
     saveLayerModels, getLayerModels,
     saveGeminiModel, getGeminiModel, saveDeepThinkingMode, getDeepThinkingMode,
-    saveProductReference, getProductReference,
+    saveProductReference, getProductReference, parseProductCSV,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
     resetCalendarPlan, initStorageListener,
   };

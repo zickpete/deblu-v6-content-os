@@ -59,6 +59,9 @@ class V6Header extends HTMLElement {
             <span class="ai-dot mock" id="aiDot" aria-hidden="true"></span>
             <span id="aiLabel" data-i18n="common.demo">COMMON.DEMO</span>
           </div>
+          <button class="btn btn-secondary" id="dbBtn" style="font-size:12px;padding:8px 16px;" title="Product Database" data-i18n="header.database">
+            📦 ราคาสินค้า
+          </button>
           <button class="btn btn-secondary" id="apiKeyBtn" style="font-size:12px;padding:8px 16px;" title="Configure AI API Key" data-i18n="header.settings">
             ⚙️ ตั้งค่า (Settings)
           </button>
@@ -257,18 +260,39 @@ const AI_MODAL_HTML = `
       <button class="btn btn-secondary" id="clearApiKeyBtn" data-i18n="modal.ai.clear">🗑 ลบ</button>
     </div>
 
+  </div>
+`;
+
+const DB_MODAL_HTML = `
+  <!-- ═══ PRODUCT DB MODAL ═══ -->
+  <div id="dbModal" role="dialog" aria-modal="true" aria-labelledby="dbModalTitle" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:600px; background:var(--surface); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 24px 48px rgba(0,0,0,0.5); z-index:1001;">
+    <div class="modal-title" id="dbModalTitle">
+      <span data-i18n="modal.db.title">📦 ฐานข้อมูลสินค้า / Price List</span>
+      <button class="modal-close" id="closeDbModalBtn" aria-label="Close database">✕</button>
+    </div>
+
     <div class="form-group" style="margin-top:16px;">
-      <label class="form-label" for="productRefInput">📦 ข้อมูลสินค้า / Price List (Product Reference)</label>
+      <label class="form-label" for="productRefInput">Price List (Product Reference)</label>
       <textarea
         class="form-input"
         id="productRefInput"
-        rows="6"
-        placeholder="วางข้อมูลสินค้า รหัสรุ่น ราคา ที่นี่... เช่น:\nL5623 รองเท้าผู้หญิง ราคา 990 บาท\nM8001 รองเท้าผู้ชาย ราคา 1,290 บาท"
-        style="font-size:12px;line-height:1.6;resize:vertical;min-height:100px;"
+        rows="8"
+        placeholder="วางข้อมูลสินค้า รหัสรุ่น ราคา ที่นี่..."
+        style="font-size:12px;line-height:1.6;resize:vertical;min-height:150px;font-family:monospace;"
       ></textarea>
-      <div style="margin-top:6px;font-size:11px;color:#334155;line-height:1.6;">
-        📌 AI จะใช้ข้อมูลนี้เป็น Knowledge Base ในทุกการสร้าง Content<br/>
-        🔠 รหัสขึ้นต้นด้วย M = รองเท้าผู้ชาย, L = รองเท้าผู้หญิง
+      
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;">
+        <label for="csvUploadInput" class="btn btn-secondary" style="cursor:pointer;flex:1;text-align:center;">
+          📥 อัพโหลดไฟล์ CSV (Excel)
+        </label>
+        <input type="file" id="csvUploadInput" accept=".csv" style="display:none;">
+        <button class="btn btn-primary" id="saveDbBtn" style="flex:1;">💾 บันทึกข้อมูล</button>
+      </div>
+
+      <div style="margin-top:12px;font-size:11px;color:#64748b;line-height:1.6;">
+        📌 <b>AI จะดึงราคาจากหน้านี้ไปใช้เสมอ</b><br/>
+        - อัพโหลดไฟล์ "ฟอร์มนัมเบอร์-ราคารองเท้า" แบบ CSV ระบบจะอ่านราคาป้ายและดึงมาให้โดยอัตโนมัติ<br/>
+        - หากลบข้อมูลทิ้ง ระบบจะดึงข้อมูลสำรอง (Default) มาใช้แทน
       </div>
     </div>
   </div>
@@ -280,6 +304,7 @@ const POPOVER_OPTIONS_HTML = `<div class="model-selector-container"><div class="
 document.addEventListener('DOMContentLoaded', () => {
    if (!document.getElementById('apiKeyModal')) {
        document.body.insertAdjacentHTML('beforeend', AI_MODAL_HTML);
+       document.body.insertAdjacentHTML('beforeend', DB_MODAL_HTML);
        document.querySelectorAll('.model-dropdown-popover').forEach(el => {
            el.innerHTML = POPOVER_OPTIONS_HTML;
        });
@@ -296,8 +321,15 @@ function initGlobalApiKeyModal() {
     const keyInput   = document.getElementById('apiKeyInput');
     const testBtn    = document.getElementById('apiTesterBtn');
     const testFbk    = document.getElementById('apiTesterFeedback');
-    const productRef = document.getElementById('productRefInput');
     
+    // DB Modal Elements
+    const dbBtn      = document.getElementById('dbBtn');
+    const dbModal    = document.getElementById('dbModal');
+    const closeDbBtn = document.getElementById('closeDbModalBtn');
+    const productRef = document.getElementById('productRefInput');
+    const saveDbBtn  = document.getElementById('saveDbBtn');
+    const csvInput   = document.getElementById('csvUploadInput');
+
     // Layer Mapping UI
     const triggers   = document.querySelectorAll('.layer-model-trigger');
     const deepToggle = document.getElementById('deepThinkingToggle');
@@ -309,6 +341,49 @@ function initGlobalApiKeyModal() {
     btn.addEventListener('click', openModal);
     if(overlay) overlay.addEventListener('click', closeAll);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+    // DB Modal Logic
+    if (dbBtn) {
+      dbBtn.addEventListener('click', () => {
+        if (productRef) productRef.value = window.V6Store.getProductReference();
+        if (dbModal) dbModal.style.display = 'block';
+        if (overlay) overlay.classList.add('open');
+        document.body.classList.add('modal-active');
+      });
+    }
+
+    if (closeDbBtn) {
+      closeDbBtn.addEventListener('click', closeAll);
+    }
+
+    if (saveDbBtn) {
+      saveDbBtn.addEventListener('click', () => {
+        if (productRef) {
+          window.V6Store.saveProductReference(productRef.value.trim());
+          showToast('✅ Product Database saved!', 'success');
+        }
+        closeAll();
+      });
+    }
+
+    if (csvInput) {
+      csvInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const csvText = evt.target.result;
+          const parsedMarkdown = window.V6Store.parseProductCSV(csvText);
+          if (productRef) {
+            productRef.value = parsedMarkdown;
+            window.V6Store.saveProductReference(parsedMarkdown);
+            showToast('✅ CSV Parsed successfully', 'success');
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
 
     // Expose closeAll for layout use
     window.V6Layer2 = window.V6Layer2 || {};
@@ -337,7 +412,6 @@ function initGlobalApiKeyModal() {
       });
       
       if (deepToggle) deepToggle.checked = window.V6Store.getDeepThinkingMode();
-      if (productRef) productRef.value = window.V6Store.getProductReference();
 
       modal.classList.add('open');
       if(overlay) overlay.classList.add('open');
@@ -348,6 +422,7 @@ function initGlobalApiKeyModal() {
     function closeAll() {
       if(modal) modal.classList.remove('open');
       if(overlay) overlay.classList.remove('open');
+      if(dbModal) dbModal.style.display = 'none';
       document.body.classList.remove('modal-active'); // Remove background blur
       
       const detailModal = document.getElementById('cardDetailModal');
@@ -589,11 +664,6 @@ function initGlobalApiKeyModal() {
         } else {
           window.V6Store.clearApiKey();
           showToast('✅ Demo Mode active', 'info');
-        }
-
-        // Save Product Reference
-        if (productRef) {
-          window.V6Store.saveProductReference(productRef.value.trim());
         }
 
         // 2. Broadcast to all layers (Tabs)
