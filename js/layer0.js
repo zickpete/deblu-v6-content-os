@@ -615,6 +615,12 @@ window.V6Layer0 = (function () {
     
     const genBtn = $('generateBtn');
     if (genBtn) genBtn.addEventListener('click', onGenerate);
+
+    // Cloud Sync Refresh
+    window.addEventListener('v6:cloudSync', (e) => {
+      console.log('[Layer0] ☁️ Cloud sync detected, refreshing history...');
+      renderHistory();
+    });
   }
 
   /* ─── Utility ─── */

@@ -615,6 +615,14 @@ window.V6Layer2 = (function () {
     // STEP 7: Bind resizable split pane
     initSplitResize();
 
+    // Cloud Sync Refresh
+    window.addEventListener('v6:cloudSync', (e) => {
+      console.log('[Layer2] ☁️ Cloud sync detected, refreshing UI...');
+      if (loadData() && state.card) {
+        renderUI();
+      }
+    });
+
     console.log('[Layer2] Initialization complete ✅');
   }
 

@@ -784,6 +784,19 @@ window.V6Layer1 = (function () {
     window.removeEventListener('v6:langChange', onLangChange);
     window.addEventListener('v6:langChange', onLangChange);
 
+    // Cloud Sync Refresh
+    window.addEventListener('v6:cloudSync', (e) => {
+      console.log('[Layer1] ☁️ Cloud sync detected, refreshing UI...');
+      const strategy = loadStrategy();
+      if (strategy) {
+        state.strategy = strategy;
+        state.cards = V6Store.getCalendar(strategy.id);
+        renderCalendarGrid(state.cards);
+        renderKanban(state.cards);
+        renderStatsBar(state.cards);
+      }
+    });
+
     console.log('[V6 Content OS] Layer 1: The Calendar Engine initialized ✅');
   }
 
