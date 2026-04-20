@@ -257,30 +257,32 @@ const AI_MODAL_HTML = `
 
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="btn btn-primary" id="saveApiKeyBtn" style="flex:1;" data-i18n="modal.ai.save">💾 บันทึก Key</button>
-      <button class="btn btn-secondary" id="clearApiKeyBtn" data-i18n="modal.ai.clear">🗑 ลบ</button>
     </div>
 
     <!-- ─── Team Sync Section ─── -->
     <div class="form-group" style="margin-top:24px; padding-top:16px; border-top:1px solid var(--color-border-base);">
-      <label class="form-label">👥 Team Collaboration (Sync ID)</label>
+      <label class="form-label" style="display:flex; align-items:center; gap:8px;">
+        👥 Team Sync ID 
+        <span style="font-size:10px; background:var(--color-primary-base); color:white; padding:2px 6px; border-radius:100px;">BETA</span>
+      </label>
       <div style="display:flex; gap:8px;">
         <input
           class="form-input"
           type="text"
           id="teamSyncIdInput"
           placeholder="Enter Team ID..."
-          style="font-family:monospace; font-weight:bold; letter-spacing:1px;"
+          style="font-family:monospace; font-weight:bold; letter-spacing:1px; text-transform:uppercase;"
           autocomplete="off"
         />
         <button class="btn btn-secondary" id="copyTeamIdBtn" title="Copy ID" style="padding:8px 12px;">📋</button>
       </div>
       <div style="margin-top:8px;">
-        <button class="btn btn-primary" id="joinTeamBtn" style="width:100%; background:linear-gradient(135deg, #4ade80 0%, #16a34a 100%);">
-          🚀 Join / Update Team
+        <button class="btn btn-primary" id="joinTeamBtn" style="width:100%; background:linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border:none; box-shadow:0 4px 12px rgba(37,99,235,0.3);">
+          ⚡ Save & Sync Team
         </button>
       </div>
       <div style="margin-top:8px; font-size:11px; color:var(--color-text-subtle); line-height:1.4;">
-        📌 <b>How it works:</b> Share this ID with your teammates to work together in real-time. Anyone with this ID can view and edit your content.
+        📌 <b>Real-time Sync:</b> Share this ID with your team. Changes on PC will appear on Mobile instantly.
       </div>
     </div>
 

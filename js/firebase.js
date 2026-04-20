@@ -1,6 +1,7 @@
 /* ================================================
    V.6 Content OS — Firebase Integration
-   Team Collaboration Mode (Dynamic Shared ID)
+   Single-Document Team Sync Mode
+   Path: deblu_shared_data/{TeamSyncID}
    ================================================ */
 
 (function () {
@@ -9,7 +10,7 @@
   const STORAGE_KEY = 'v6_team_sync_id';
   
   // Default shared ID if none exists
-  let sharedRoot = localStorage.getItem(STORAGE_KEY) || 'DEBLU-DEFAULT';
+  let teamId = localStorage.getItem(STORAGE_KEY) || 'DEBLU-V6';
 
   /* ─── Firebase Config ─── */
   const firebaseConfig = {
@@ -37,36 +38,30 @@
       }
     });
 
-  /** Get a Firestore doc reference under the current Team ID */
-  function sharedDoc(collection, docId) {
-    return db.collection('teams').doc(sharedRoot).collection(collection).doc(docId);
-  }
-
-  /** Get a Firestore collection reference under the current Team ID */
-  function sharedCollection(collectionName) {
-    return db.collection('teams').doc(sharedRoot).collection(collectionName);
+  /** Get the primary Firestore document for the current Team */
+  function getTeamDoc() {
+    return db.collection('deblu_shared_data').doc(teamId);
   }
 
   /** Update the Team Sync ID and signal a reconnect */
   function setTeamSyncId(newId) {
     if (!newId) return;
     const cleanId = newId.trim().toUpperCase().replace(/\s+/g, '-');
-    sharedRoot = cleanId;
+    teamId = cleanId;
     localStorage.setItem(STORAGE_KEY, cleanId);
     console.log('[Firebase] Team Sync ID updated to:', cleanId);
     window.dispatchEvent(new CustomEvent('v6:teamIdChanged', { detail: { teamId: cleanId } }));
   }
 
   function getTeamSyncId() {
-    return sharedRoot;
+    return teamId;
   }
 
   /* ─── Expose Global API ─── */
   window.V6Firebase = {
     app,
     db,
-    sharedDoc,
-    sharedCollection,
+    getTeamDoc,
     setTeamSyncId,
     getTeamSyncId,
     isReady: true,
@@ -75,5 +70,5 @@
   // Signal that Firebase is ready
   window.dispatchEvent(new CustomEvent('v6:firebaseReady'));
 
-  console.log('[Firebase] V6Firebase initialized (Team ID:', sharedRoot, ') ✅');
+  console.log('[Firebase] V6Firebase initialized (Team ID:', teamId, ') ✅');
 })();

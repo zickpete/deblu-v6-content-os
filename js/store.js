@@ -1,6 +1,6 @@
 /* ================================================
    V.6 Content OS — Store (Dual-Write State Manager)
-   Team Collaboration Mode (Shared Sync ID)
+   Single-Document Team Sync Edition
    ================================================ */
 
 window.V6Store = (function () {
@@ -26,27 +26,16 @@ window.V6Store = (function () {
     return !!(window.V6Firebase && V6Firebase.isReady);
   }
 
-  /** Write to Firestore (fire-and-forget, non-blocking) */
-  function fsWrite(collection, docId, data) {
+  /** Update a specific field in the Team Document */
+  function fsUpdate(field, data) {
     if (!isFirebaseReady()) return;
     try {
-      V6Firebase.sharedDoc(collection, docId)
-        .set(data, { merge: true })
-        .catch(err => console.warn('[V6Store] Firestore write failed:', err.message));
+      const updateData = { [field]: data, updated_at: new Date().toISOString() };
+      V6Firebase.getTeamDoc()
+        .set(updateData, { merge: true })
+        .catch(err => console.warn('[V6Store] Firestore update failed:', err.message));
     } catch (e) {
-      console.warn('[V6Store] Firestore write error:', e.message);
-    }
-  }
-
-  /** Delete from Firestore (fire-and-forget) */
-  function fsDelete(collection, docId) {
-    if (!isFirebaseReady()) return;
-    try {
-      V6Firebase.sharedDoc(collection, docId)
-        .delete()
-        .catch(err => console.warn('[V6Store] Firestore delete failed:', err.message));
-    } catch (e) {
-      console.warn('[V6Store] Firestore delete error:', e.message);
+      console.warn('[V6Store] Firestore update error:', e.message);
     }
   }
 
@@ -55,22 +44,12 @@ window.V6Store = (function () {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      console.warn('[V6Store] Parse error, resetting store', e);
-      return [];
-    }
+    } catch (e) { return []; }
   }
 
   function saveAll(strategies) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
-    } catch (e) {
-      console.error('[V6Store] Failed to save to localStorage', e);
-    }
-    // Cloud sync: write each strategy to Firestore
-    if (isFirebaseReady()) {
-      strategies.forEach(s => fsWrite('strategies', s.id, s));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
+    fsUpdate('strategies', strategies);
   }
 
   /* ─── Public API: Strategies ─── */
@@ -91,15 +70,6 @@ window.V6Store = (function () {
 
   function save({ month, core_products, special_events, aiResponse }) {
     const all = getAll();
-
-    const tracks = (aiResponse.campaign_tracks || []).map(t => ({
-      id: t.id || generateTrackId(),
-      track_name:       t.track_name       || '',
-      objective:        t.objective        || '',
-      content_ratio:    Number(t.content_ratio) || 0,
-      key_selling_point: t.key_selling_point || '',
-    }));
-
     const strategy = {
       id:             generateId(),
       created_at:     new Date().toISOString(),
@@ -113,39 +83,38 @@ window.V6Store = (function () {
         font_vibe:        (aiResponse.mood_and_tone && aiResponse.mood_and_tone.font_vibe)        || '',
         visual_direction: (aiResponse.mood_and_tone && aiResponse.mood_and_tone.visual_direction) || '',
       },
-      campaign_tracks: tracks,
+      campaign_tracks: (aiResponse.campaign_tracks || []).map(t => ({
+        id: t.id || generateTrackId(),
+        track_name: t.track_name || '',
+        objective: t.objective || '',
+        content_ratio: Number(t.content_ratio) || 0,
+        key_selling_point: t.key_selling_point || '',
+      })),
     };
 
     all.unshift(strategy);
     saveAll(all);
-    console.log('[V6Store] Strategy saved:', strategy);
     return strategy;
   }
 
   function update(id, changes) {
     const all = getAll();
     const idx = all.findIndex(s => s.id === id);
-    if (idx === -1) { console.warn('[V6Store] Strategy not found:', id); return null; }
+    if (idx === -1) return null;
     all[idx] = { ...all[idx], ...changes, updated_at: new Date().toISOString() };
     saveAll(all);
-    fsWrite('strategies', id, all[idx]);
-    console.log('[V6Store] Strategy updated:', all[idx]);
     return all[idx];
   }
 
   function approve(id) {
     const strategy = update(id, { status: 'approved', approved_at: new Date().toISOString() });
-    if (strategy) {
-      window.dispatchEvent(new CustomEvent('v6:strategyApproved', { detail: strategy }));
-      console.log('[V6Store] 🟢 Strategy approved & dispatched to Layer 1:', strategy.id);
-    }
+    if (strategy) window.dispatchEvent(new CustomEvent('v6:strategyApproved', { detail: strategy }));
     return strategy;
   }
 
   function remove(id) {
     const all = getAll().filter(s => s.id !== id);
     saveAll(all);
-    fsDelete('strategies', id);
   }
 
   /* ─── Calendar CRUD ─── */
@@ -158,16 +127,14 @@ window.V6Store = (function () {
   }
 
   function saveAllCalendars(data) {
-    try { localStorage.setItem(CALENDAR_KEY, JSON.stringify(data)); }
-    catch (e) { console.error('[V6Store] Calendar save failed', e); }
+    localStorage.setItem(CALENDAR_KEY, JSON.stringify(data));
+    fsUpdate('calendars', data);
   }
 
   function saveCalendar(strategyId, cards) {
     const all = getAllCalendars();
     all[strategyId] = cards;
     saveAllCalendars(all);
-    fsWrite('calendars', strategyId, { cards: cards, updated_at: new Date().toISOString() });
-    console.log('[V6Store] Calendar saved for', strategyId, '—', cards.length, 'cards');
     return cards;
   }
 
@@ -176,58 +143,44 @@ window.V6Store = (function () {
   }
 
   function updateCard(strategyId, cardId, changes) {
-    const all   = getAllCalendars();
+    const all = getAllCalendars();
     const cards = all[strategyId] || [];
-    const idx   = cards.findIndex(c => c.id === cardId);
-    if (idx === -1) { console.warn('[V6Store] Card not found:', cardId); return null; }
+    const idx = cards.findIndex(c => c.id === cardId);
+    if (idx === -1) return null;
     cards[idx] = { ...cards[idx], ...changes, updated_at: new Date().toISOString() };
     all[strategyId] = cards;
     saveAllCalendars(all);
-    fsWrite('calendars', strategyId, { cards: cards, updated_at: new Date().toISOString() });
     return cards[idx];
   }
 
   function deleteCard(strategyId, cardId) {
-    const all   = getAllCalendars();
+    const all = getAllCalendars();
     const cards = all[strategyId] || [];
-    const filtered = cards.filter(c => c.id !== cardId);
-    all[strategyId] = filtered;
+    all[strategyId] = cards.filter(c => c.id !== cardId);
     saveAllCalendars(all);
-    fsWrite('calendars', strategyId, { cards: filtered, updated_at: new Date().toISOString() });
-    console.log('[V6Store] Card deleted:', cardId, 'from strategy:', strategyId);
     return true;
   }
 
   function lockCalendar(strategyId) {
     const locked = update(strategyId, { calendar_locked: true, calendar_locked_at: new Date().toISOString() });
-    if (locked) {
-      window.dispatchEvent(new CustomEvent('v6:calendarLocked', { detail: locked }));
-      console.log('[V6Store] 🔒 Calendar locked → Layer 2 ready:', strategyId);
-    }
+    if (locked) window.dispatchEvent(new CustomEvent('v6:calendarLocked', { detail: locked }));
     return locked;
   }
 
-  /* ─── API Key Management ─── */
+  /* ─── Settings Management ─── */
 
   function saveApiKey(key) {
     localStorage.setItem(API_KEY_KEY, key);
-    fsWrite('settings', 'main', { apiKey: key, updated_at: new Date().toISOString() });
+    syncSettings();
   }
 
   function getApiKey() {
     return localStorage.getItem(API_KEY_KEY);
   }
 
-  function clearApiKey() {
-    localStorage.removeItem(API_KEY_KEY);
-    fsWrite('settings', 'main', { apiKey: '', updated_at: new Date().toISOString() });
-  }
-
-  /* ─── AI Model Configuration ─── */
-
   function saveLayerModels(modelsMap) {
     localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(modelsMap));
-    fsWrite('settings', 'main', { layerModels: modelsMap, updated_at: new Date().toISOString() });
+    syncSettings();
   }
 
   function getLayerModels() {
@@ -235,264 +188,147 @@ window.V6Store = (function () {
       const raw = localStorage.getItem(LAYER_MODELS_KEY);
       if (raw) return JSON.parse(raw);
     } catch(e) {}
-    return {
-      layer0: 'gemini-1.5-pro',
-      layer1: 'gemini-1.5-flash',
-      layer2: 'gemini-1.5-flash'
-    };
-  }
-
-  function saveGeminiModel(model) {
-    const map = getLayerModels();
-    map.layer0 = model;
-    saveLayerModels(map);
-  }
-
-  function getGeminiModel() {
-    return getLayerModels().layer0;
+    return { layer0: 'gemini-1.5-pro', layer1: 'gemini-1.5-flash', layer2: 'gemini-1.5-flash' };
   }
 
   function saveDeepThinkingMode(isDeep) {
     localStorage.setItem(THINKING_KEY, isDeep ? 'true' : 'false');
-    fsWrite('settings', 'main', { deepThinking: isDeep, updated_at: new Date().toISOString() });
+    syncSettings();
   }
 
   function getDeepThinkingMode() {
     return localStorage.getItem(THINKING_KEY) === 'true';
   }
 
-  /* ─── Product Reference / Price List ─── */
+  function syncSettings() {
+    const data = {
+      apiKey: getApiKey() || '',
+      layerModels: getLayerModels(),
+      deepThinking: getDeepThinkingMode()
+    };
+    fsUpdate('settings', data);
+  }
+
+  /* ─── Product Reference ─── */
 
   function saveProductReference(text) {
     localStorage.setItem(PRODUCT_REF_KEY, text || '');
-    fsWrite('settings', 'products', { text: text || '', updated_at: new Date().toISOString() });
+    fsUpdate('products', text || '');
+  }
+
+  function getProductReference() {
+    return localStorage.getItem(PRODUCT_REF_KEY) || '';
   }
 
   function parseProductCSV(csvStr) {
     if (!csvStr) return '';
     const lines = csvStr.split(/\r?\n/);
     const models = {};
-
     for (let i = 0; i < lines.length; i++) {
         const row = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-        while (row.length < 18) row.push('');
-
+        if (row.length < 1) continue;
         const m1 = row[0];
-        if (m1 && m1 !== 'NUMBER' && m1 !== 'SS' && /[a-zA-Z]/.test(m1)) {
-            let p1 = row[7];
-            if (!p1) p1 = row[3];
-            if (!p1) p1 = row[4];
-            if (p1) p1 = p1.replace(/,/g, '');
-            if (p1 && !isNaN(parseInt(p1))) {
-                models[m1] = p1;
-            }
+        if (m1 && m1 !== 'NUMBER' && /[a-zA-Z]/.test(m1)) {
+            let p1 = row[7] || row[3] || row[4];
+            if (p1) models[m1] = p1.replace(/,/g, '');
         }
-
         const m2 = row[10];
-        if (m2 && m2 !== 'NUMBER' && m2 !== 'SS' && /[a-zA-Z]/.test(m2)) {
-            let p2 = row[17];
-            if (!p2) p2 = row[13];
-            if (!p2) p2 = row[14];
-            if (p2) p2 = p2.replace(/,/g, '');
-            if (p2 && !isNaN(parseInt(p2))) {
-                models[m2] = p2;
-            }
+        if (m2 && m2 !== 'NUMBER' && /[a-zA-Z]/.test(m2)) {
+            let p2 = row[17] || row[13] || row[14];
+            if (p2) models[m2] = p2.replace(/,/g, '');
         }
     }
-
     return Object.entries(models).map(([m, p]) => `${m} ราคา ${p} บาท`).join('\\n');
   }
 
-  function getProductReference() {
-    let saved = localStorage.getItem(PRODUCT_REF_KEY);
-    if (!saved) {
-      if (typeof V6_DEFAULT_CSV !== 'undefined') {
-        saved = parseProductCSV(V6_DEFAULT_CSV);
-      } else {
-        saved = '';
-      }
-    }
-    return saved;
-  }
-
-  /* ─── Reset Calendar Plan ─── */
-  function resetCalendarPlan() {
-    localStorage.removeItem(CALENDAR_KEY);
-    const all = getAll();
-    all.forEach(s => {
-      s.status = 'draft';
-      delete s.calendar_locked;
-      delete s.calendar_locked_at;
-    });
-    saveAll(all);
-
-    // Cloud sync: remove all calendars
-    if (isFirebaseReady()) {
-      const col = V6Firebase.sharedCollection('calendars');
-      if (col) {
-        col.get().then(snap => {
-          snap.forEach(doc => doc.ref.delete());
-        }).catch(() => {});
-      }
-    }
-
-    console.log('[V6Store] 🔄 Calendar plan reset — ready for new strategy');
-  }
-
-  /* ─── Export ─── */
-  function exportJSON(id) {
-    const strategy = id ? getById(id) : list()[0];
-    if (!strategy) return null;
-    const blob = new Blob([JSON.stringify(strategy, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `v6-strategy-${strategy.month.replace(/ /g,'-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   /* ═══════════════════════════════════════════════════════
-     FIRESTORE REAL-TIME SYNC (Team ID Mode)
+     FIRESTORE SINGLE-DOC SYNC
      ═══════════════════════════════════════════════════════ */
 
-  let _unsubStrategies = null;
-  let _unsubCalendars = null;
-  let _unsubSettings = null;
-  let _unsubProducts = null;
-
-  function stopSync() {
-    if (_unsubStrategies) _unsubStrategies();
-    if (_unsubCalendars) _unsubCalendars();
-    if (_unsubSettings) _unsubSettings();
-    if (_unsubProducts) _unsubProducts();
-    _unsubStrategies = null;
-    _unsubCalendars = null;
-    _unsubSettings = null;
-    _unsubProducts = null;
-  }
+  let _unsubTeam = null;
 
   function initFirestoreSync() {
     if (!isFirebaseReady()) return;
     const teamId = V6Firebase.getTeamSyncId();
-    console.log('[V6Store] 🔄 Setting up Firestore sync for Team:', teamId);
+    console.log('[V6Store] 🔄 Syncing with Team Document:', teamId);
 
-    stopSync(); // Ensure clean slate
+    if (_unsubTeam) _unsubTeam();
 
-    // --- Strategies listener ---
-    const stratCol = V6Firebase.sharedCollection('strategies');
-    _unsubStrategies = stratCol.onSnapshot((snapshot) => {
-      if (snapshot.metadata.hasPendingWrites) return;
-      const cloudStrategies = [];
-      snapshot.forEach(doc => cloudStrategies.push(doc.data()));
-      if (cloudStrategies.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudStrategies));
-        console.log('[V6Store] ☁️ Strategies synced (Team:', teamId, ')');
+    _unsubTeam = V6Firebase.getTeamDoc().onSnapshot((doc) => {
+      if (!doc.exists || doc.metadata.hasPendingWrites) return;
+      const data = doc.data();
+
+      // Sync Strategies
+      if (data.strategies) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.strategies));
         window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'strategies' } }));
       }
-    }, err => console.warn('[V6Store] Sync error (strategies):', err.message));
-
-    // --- Calendars listener ---
-    const calCol = V6Firebase.sharedCollection('calendars');
-    _unsubCalendars = calCol.onSnapshot((snapshot) => {
-      if (snapshot.metadata.hasPendingWrites) return;
-      const cloudCalendars = {};
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.cards) cloudCalendars[doc.id] = data.cards;
-      });
-      if (Object.keys(cloudCalendars).length > 0) {
-        localStorage.setItem(CALENDAR_KEY, JSON.stringify(cloudCalendars));
-        console.log('[V6Store] ☁️ Calendars synced (Team:', teamId, ')');
+      // Sync Calendars
+      if (data.calendars) {
+        localStorage.setItem(CALENDAR_KEY, JSON.stringify(data.calendars));
         window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'calendars' } }));
       }
-    }, err => console.warn('[V6Store] Sync error (calendars):', err.message));
-
-    // --- Settings listener ---
-    const settingsRef = V6Firebase.sharedDoc('settings', 'main');
-    _unsubSettings = settingsRef.onSnapshot((doc) => {
-      if (!doc.exists || doc.metadata.hasPendingWrites) return;
-      const data = doc.data();
-      if (data.apiKey !== undefined) localStorage.setItem(API_KEY_KEY, data.apiKey);
-      if (data.layerModels) localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(data.layerModels));
-      if (data.deepThinking !== undefined) localStorage.setItem(THINKING_KEY, data.deepThinking ? 'true' : 'false');
-      console.log('[V6Store] ☁️ Settings synced (Team:', teamId, ')');
-      window.dispatchEvent(new CustomEvent('v6:settingsUpdated'));
-    }, err => console.warn('[V6Store] Sync error (settings):', err.message));
-
-    // --- Product Reference listener ---
-    const productsRef = V6Firebase.sharedDoc('settings', 'products');
-    _unsubProducts = productsRef.onSnapshot((doc) => {
-      if (!doc.exists || doc.metadata.hasPendingWrites) return;
-      const data = doc.data();
-      if (data.text !== undefined) localStorage.setItem(PRODUCT_REF_KEY, data.text);
-      console.log('[V6Store] ☁️ Products synced (Team:', teamId, ')');
-    }, err => console.warn('[V6Store] Sync error (products):', err.message));
+      // Sync Settings
+      if (data.settings) {
+        const s = data.settings;
+        if (s.apiKey !== undefined) localStorage.setItem(API_KEY_KEY, s.apiKey);
+        if (s.layerModels) localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(s.layerModels));
+        if (s.deepThinking !== undefined) localStorage.setItem(THINKING_KEY, s.deepThinking ? 'true' : 'false');
+        window.dispatchEvent(new CustomEvent('v6:settingsUpdated'));
+      }
+      // Sync Products
+      if (data.products !== undefined) {
+        localStorage.setItem(PRODUCT_REF_KEY, data.products);
+      }
+      
+      console.log('[V6Store] ☁️ Team data synced!');
+    }, err => console.warn('[V6Store] Sync error:', err.message));
   }
 
-  /** One-time upload of localStorage data → Firestore */
-  async function migrateToCloud() {
+  /** Push local data to initialize a new room */
+  async function pushLocalToCloud() {
     if (!isFirebaseReady()) return;
     const teamId = V6Firebase.getTeamSyncId();
-    const flagKey = `v6_migrated_${teamId}`;
+    const flagKey = `v6_push_${teamId}`;
     if (localStorage.getItem(flagKey)) return;
 
-    const strategies = getAll();
-    const calendars = getAllCalendars();
-    const apiKey = getApiKey();
-    const productRef = localStorage.getItem(PRODUCT_REF_KEY);
-    
-    // Only migrate if there's actually data to share
-    const hasData = strategies.length > 0 || Object.keys(calendars).length > 0 || !!apiKey || !!productRef;
-    
-    if (!hasData) {
-      localStorage.setItem(flagKey, new Date().toISOString());
-      console.log('[V6Store] New team room empty. Initialized.');
-      return;
-    }
+    const data = {
+      strategies: getAll(),
+      calendars: getAllCalendars(),
+      settings: {
+        apiKey: getApiKey() || '',
+        layerModels: getLayerModels(),
+        deepThinking: getDeepThinkingMode()
+      },
+      products: getProductReference(),
+      updated_at: new Date().toISOString()
+    };
 
-    console.log('[V6Store] 🚚 Migrating local data to Team:', teamId);
-    try {
-      for (const s of strategies) await V6Firebase.sharedDoc('strategies', s.id).set(s);
-      for (const [id, cards] of Object.entries(calendars)) await V6Firebase.sharedDoc('calendars', id).set({ cards, updated_at: new Date().toISOString() });
-      
-      const models = getLayerModels();
-      const deep = getDeepThinkingMode();
-      await V6Firebase.sharedDoc('settings', 'main').set({ apiKey: apiKey || '', layerModels: models, deepThinking: deep, updated_at: new Date().toISOString() }, { merge: true });
-      
-      if (productRef) await V6Firebase.sharedDoc('settings', 'products').set({ text: productRef, updated_at: new Date().toISOString() }, { merge: true });
-      
-      localStorage.setItem(flagKey, new Date().toISOString());
-      console.log('[V6Store] ✅ Migration to', teamId, 'complete!');
-    } catch (err) {
-      console.error('[V6Store] Migration error:', err);
+    // Only push if there's actual content
+    if (data.strategies.length > 0 || Object.keys(data.calendars).length > 0 || data.settings.apiKey) {
+      console.log('[V6Store] 🚚 Initializing Team Cloud Room...');
+      await V6Firebase.getTeamDoc().set(data, { merge: true });
     }
+    
+    localStorage.setItem(flagKey, new Date().toISOString());
   }
 
   /* ─── Auto-Init ─── */
   if (typeof window !== 'undefined') {
-    // When Firebase is ready, start sync
     window.addEventListener('v6:firebaseReady', () => {
-      migrateToCloud().then(() => initFirestoreSync());
+      pushLocalToCloud().then(() => initFirestoreSync());
     });
-
-    // When Team ID changes, restart everything
     window.addEventListener('v6:teamIdChanged', () => {
-      console.log('[V6Store] Team ID changed! Reconnecting...');
-      // Note: We don't clear localStorage here to allow "merging" if the user wants,
-      // but in a production app you might want to confirm if they want to wipe local data.
-      migrateToCloud().then(() => initFirestoreSync());
+      pushLocalToCloud().then(() => initFirestoreSync());
     });
   }
 
   return {
-    list, getById, getApprovedForMonth, save, update, approve, remove, exportJSON,
-    saveApiKey, getApiKey, clearApiKey,
-    saveLayerModels, getLayerModels,
-    saveGeminiModel, getGeminiModel, saveDeepThinkingMode, getDeepThinkingMode,
+    list, getById, getApprovedForMonth, save, update, approve, remove,
+    saveApiKey, getApiKey, saveLayerModels, getLayerModels,
+    saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference, parseProductCSV,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
-    resetCalendarPlan, 
-    initFirestoreSync, migrateToCloud, stopSync
+    initFirestoreSync, pushLocalToCloud
   };
 })();
