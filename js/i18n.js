@@ -90,8 +90,9 @@ window.V6i18n = (function () {
                                   en: 'Performance Dashboard — Track engagement, measure KPIs and let AI analyze monthly performance' },
     'hub.badge.ready':          { th: '✅ พร้อมใช้งาน',          en: '✅ Ready' },
     'hub.badge.coming':         { th: '🔒 เร็วๆ นี้',           en: '🔒 Coming Soon' },
-    'hub.footer':               { th: 'BAM OS v.6.1 · Deblu Thailand · สร้างด้วย ✨ AI',
-                                  en: 'BAM OS v.6.1 · Deblu Thailand · Built with ✨ AI' },
+    'hub.footer':               { th: 'BAM OS v.6.1 · สร้างโดย zickpete · สร้างด้วย ✨ AI',
+                                  en: 'BAM OS v.6.1 · Created by zickpete · Built with ✨ AI' },
+
 
 
     /* ═══ LAYER 0 — THE BRAIN ═══ */
