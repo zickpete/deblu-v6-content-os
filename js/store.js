@@ -429,34 +429,49 @@ window.V6Store = (function () {
   /** One-time upload of localStorage data → Firestore */
   async function migrateToCloud() {
     if (!isFirebaseReady()) return;
-    const migrated = localStorage.getItem('v6_firebase_migrated');
+    // Use a new flag for the shared path so it triggers again
+    const migrated = localStorage.getItem('v6_firebase_migrated_shared');
     if (migrated) return;
 
-    console.log('[V6Store] 🚚 Migrating localStorage → Firestore...');
+    const strategies = getAll();
+    const calendars = getAllCalendars();
+    const apiKey = getApiKey();
+    const productRef = localStorage.getItem(PRODUCT_REF_KEY);
+    
+    // Only migrate if this device actually has some local data to share
+    const hasDataToMigrate = strategies.length > 0 || Object.keys(calendars).length > 0 || !!apiKey || !!productRef;
+    
+    if (!hasDataToMigrate) {
+      // New device: nothing to push, just mark as migrated so it relies on cloud pull
+      localStorage.setItem('v6_firebase_migrated_shared', new Date().toISOString());
+      console.log('[V6Store] New device detected. Skipping cloud push.');
+      return;
+    }
+
+    console.log('[V6Store] 🚚 Migrating localStorage → Firestore (Shared Mode)...');
     try {
-      const strategies = getAll();
       for (const s of strategies) {
         await V6Firebase.sharedDoc('strategies', s.id).set(s);
       }
-      const calendars = getAllCalendars();
       for (const [stratId, cards] of Object.entries(calendars)) {
         await V6Firebase.sharedDoc('calendars', stratId).set({ cards, updated_at: new Date().toISOString() });
       }
-      const apiKey = getApiKey();
+      
       const models = getLayerModels();
       const deep = getDeepThinkingMode();
+      // Use merge: true so we don't overwrite existing shared settings if they exist
       await V6Firebase.sharedDoc('settings', 'main').set({
         apiKey: apiKey || '', layerModels: models, deepThinking: deep,
         updated_at: new Date().toISOString()
-      });
-      const productRef = localStorage.getItem(PRODUCT_REF_KEY);
+      }, { merge: true });
+      
       if (productRef) {
         await V6Firebase.sharedDoc('settings', 'products').set({
           text: productRef, updated_at: new Date().toISOString()
-        });
+        }, { merge: true });
       }
-      localStorage.setItem('v6_firebase_migrated', new Date().toISOString());
-      console.log('[V6Store] ✅ Migration complete!');
+      localStorage.setItem('v6_firebase_migrated_shared', new Date().toISOString());
+      console.log('[V6Store] ✅ Shared Migration complete!');
     } catch (err) {
       console.error('[V6Store] Migration error:', err);
     }
