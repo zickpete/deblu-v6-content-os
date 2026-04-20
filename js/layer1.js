@@ -550,10 +550,21 @@ window.V6Layer1 = (function () {
         </div>
       </div>
       <div class="cdm-topic thai-text">${esc(displayTopic)}</div>
-      <div class="form-group">
+
+      ${(card.meta_headline || card.meta_caption || card.meta_hashtags) ? `
+        <div style="margin-top:16px; padding:16px; background:var(--color-surface-glass); border:1px solid var(--color-border-subtle); border-radius:16px;">
+          <div style="font-size:11px; font-weight:800; color:var(--color-text-subtle); margin-bottom:12px; text-transform:uppercase;">📝 ${V6i18n.t('l1.modal.mycontent') || 'My Content / เนื้อหาที่เขียน'}</div>
+          ${card.meta_headline ? `<div style="font-weight:800; margin-bottom:8px; color:var(--color-text-main); font-size:15px; line-height:1.4;">${esc(card.meta_headline)}</div>` : ''}
+          ${card.meta_caption ? `<div style="font-size:13.5px; color:var(--color-text-subtle); white-space:pre-wrap; margin-bottom:10px; line-height:1.6;">${esc(card.meta_caption)}</div>` : ''}
+          ${card.meta_hashtags ? `<div style="font-size:12px; color:#3b82f6; font-weight:600;">${esc(card.meta_hashtags)}</div>` : ''}
+        </div>
+      ` : ''}
+
+      <div class="form-group" style="margin-top:20px;">
         <label class="form-label">${V6i18n.t('l1.modal.status')}</label>
         <select class="cdm-status-select" id="cardStatusSelect">${opts}</select>
       </div>
+
       <div class="cdm-actions">
         <button class="btn btn-primary" style="flex:1;" onclick="V6Layer1.updateCardStatus('${card.id}')">${V6i18n.t('common.save')}</button>
         <button class="btn btn-secondary" onclick="window.location.href='layer2-cards.html?strategyId=${state.strategy.id}&cardId=${card.id}'">${V6i18n.t('l1.modal.edit')}</button>

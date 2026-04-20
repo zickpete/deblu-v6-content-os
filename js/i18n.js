@@ -233,7 +233,8 @@ window.V6i18n = (function () {
 
     /* ═══ LAYER 1 — MODAL ═══ */
     'l1.modal.status':          { th: '📊 สถานะ',                en: '📊 Status' },
-    'l1.modal.edit':            { th: '🃏 แก้ไข',                en: '🃏 Edit' },
+    'l1.modal.edit':            { th: '✏️ เขียนเนื้อหา/แก้ไข',     en: '✏️ Edit Content' },
+    'l1.modal.mycontent':       { th: 'เนื้อหาที่เขียน',             en: 'My Content' },
 
     /* ═══ LAYER 2 — FACTORY (Extra) ═══ */
     'l2.btn.save':              { th: '💾 บันทึก',               en: '💾 Save' },
