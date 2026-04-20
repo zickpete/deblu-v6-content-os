@@ -221,6 +221,7 @@ window.V6i18n = (function () {
     'l1.btn.generate':          { th: '✨ สร้าง Schedule',      en: '✨ Generate Schedule' },
     'l1.btn.lock':              { th: '🔒 ล็อกปฏิทิน',           en: '🔒 Lock Calendar' },
     'l1.btn.back':              { th: '🔙 กลับสู่ Layer 0',     en: '🔙 Back to Layer 0' },
+    'l1.btn.factory.send':      { th: '🚀 ส่งเข้าโรงงานโพสต์',   en: '🚀 Send to Post Factory' },
 
     /* ═══ LAYER 1 — MODAL ═══ */
     'l1.modal.status':          { th: '📊 สถานะ',                en: '📊 Status' },
