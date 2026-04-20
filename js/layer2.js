@@ -32,14 +32,24 @@ window.V6Layer2 = (function () {
   function loadData() {
     try {
       const params = new URLSearchParams(window.location.search);
-      state.strategyId = params.get('strategyId');
-      state.cardId     = params.get('cardId');
+      // Data Bridge: Priority Check
+      const bridgedCard = localStorage.getItem('v6_edit_card_data');
+      const bridgedStrat = localStorage.getItem('v6_edit_strategy_data');
 
-      // No URL params - try fallback to existing strategy
-      if (!state.strategyId || !state.cardId) {
-        console.log('[Layer2] No URL params - attempting fallback load');
-        return tryLoadFallback();
+      if (bridgedCard && bridgedStrat) {
+        console.log('[Layer2] 🌉 Using Bridged Data from Layer 1');
+        state.card = JSON.parse(bridgedCard);
+        state.strategy = JSON.parse(bridgedStrat);
+        state.cardId = state.card.id;
+        state.strategyId = state.strategy.id;
+        // Clear bridge to avoid stale data next time
+        // localStorage.removeItem('v6_edit_card_data');
+        return true;
       }
+
+      // Fallback to URL params
+      state.strategyId = params.get('strategyId');
+
 
       state.strategy = V6Store.getById(state.strategyId);
       if (!state.strategy) {

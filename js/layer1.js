@@ -113,7 +113,7 @@ window.V6Layer1 = (function () {
     // Apply saved size/zoom immediately
     const zoomVal = (parseInt(savedSize) || 140) / 140;
     document.documentElement.style.setProperty('--card-min-h', savedSize + 'px');
-    document.documentElement.style.setProperty('--app-zoom', zoomVal.toFixed(2));
+    document.documentElement.style.setProperty('--app-scale', zoomVal.toFixed(2));
 
     // Bind slider
     const slider = $('cardSizeSlider');
@@ -122,7 +122,7 @@ window.V6Layer1 = (function () {
         const val = e.target.value;
         const zoomVal = parseInt(val) / 140;
         document.documentElement.style.setProperty('--card-min-h', val + 'px');
-        document.documentElement.style.setProperty('--app-zoom', zoomVal.toFixed(2));
+        document.documentElement.style.setProperty('--app-scale', zoomVal.toFixed(2));
         localStorage.setItem('v6_card_size', val);
       });
     }
@@ -512,7 +512,17 @@ window.V6Layer1 = (function () {
   function openCardDetail(cardId) {
     const card = state.cards.find(c => c.id === cardId);
     if (!card) return;
-    const modal   = $('cardDetailModal');
+
+    // Data Bridge: Save full card to local for Layer 2
+    localStorage.setItem('v6_edit_card_data', JSON.stringify(card));
+    localStorage.setItem('v6_edit_strategy_data', JSON.stringify(state.strategy));
+
+    const modal = $('cardDetailModal');
+    if (!modal) {
+       // Fallback: Just navigate if modal missing (shouldn't happen)
+       window.location.href = `./layer2-cards.html?strategyId=${state.strategy.id}&cardId=${card.id}`;
+       return;
+    }
     const overlay = $('cardDetailOverlay');
     if (!modal) return;
 

@@ -171,21 +171,25 @@ class V6Header extends HTMLElement {
 
       // --- Sync Status Listener ---
       const syncDot = this.querySelector('#syncStatusDot');
-      window.addEventListener('v6:syncStatus', (e) => {
+
+      const updateSyncUI = (status) => {
         if (!syncDot) return;
-        const status = e.detail.status;
         syncDot.className = 'sync-status-dot ' + status;
-        
         let title = 'Sync Status: ';
         switch(status) {
           case 'synced':  title += 'Connected & Online'; break;
-          case 'syncing': title += 'Syncing with Cloud...'; break;
-          case 'cached':  title += 'Offline (Using Cache)'; break;
-          case 'error':   title += 'Connection Error'; break;
-          case 'new':     title += 'New Room Initialized'; break;
+          case 'syncing': title += 'Syncing...'; break;
+          case 'cached':  title += 'Offline (Cache)'; break;
+          case 'error':   title += 'Error'; break;
+          case 'new':     title += 'New Room'; break;
         }
         syncDot.title = title;
-      });
+      };
+
+      // Initial state from store
+      if (window.V6Store) updateSyncUI(V6Store.getSyncStatus());
+
+      window.addEventListener('v6:syncStatus', (e) => updateSyncUI(e.detail.status));
     }, 0);
   }
 }

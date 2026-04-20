@@ -12,6 +12,7 @@ window.V6Store = (function () {
   const LAYER_MODELS_KEY = 'v6_layer_models';
 
   /* ─── State Helpers ─── */
+  let _lastSyncStatus = 'syncing';
   const generateId = () => 'str_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
   const generateTrackId = () => 'trk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
   const isFirebaseReady = () => !!(window.V6Firebase && V6Firebase.isReady);
@@ -118,6 +119,15 @@ window.V6Store = (function () {
 
   let _unsubTeam = null;
 
+  function setSyncStatus(status) {
+    _lastSyncStatus = status;
+    window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status } }));
+  }
+
+  function getSyncStatus() {
+    return _lastSyncStatus;
+  }
+
   function processCloudData(data, isInitial = false) {
     if (!data) return;
     console.log('[V6Store] ☁️ Processing Cloud Data (Initial:', isInitial, ')');
@@ -145,18 +155,18 @@ window.V6Store = (function () {
     if (_unsubTeam) _unsubTeam();
 
     // 1. Initial Fetch (Mandatory for Start)
-    window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: 'syncing' } }));
+    setSyncStatus('syncing');
     try {
       const doc = await docRef.get();
       if (doc.exists) {
         processCloudData(doc.data(), true);
-        window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: 'synced' } }));
+        setSyncStatus('synced');
       } else {
-        window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: 'new' } }));
+        setSyncStatus('new');
       }
     } catch (e) {
       console.warn('[V6Store] Initial Fetch Failed:', e.message);
-      window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: 'error' } }));
+      setSyncStatus('error');
     }
 
     // 2. Real-time Listener
@@ -170,13 +180,14 @@ window.V6Store = (function () {
       
       if (!hasPendingWrites) {
         processCloudData(doc.data());
-        window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: isFromCache ? 'cached' : 'synced' } }));
+        setSyncStatus(isFromCache ? 'cached' : 'synced');
       }
     }, err => {
       console.warn('[V6Store] Real-time Sync Error:', err.message);
-      window.dispatchEvent(new CustomEvent('v6:syncStatus', { detail: { status: 'error' } }));
+      setSyncStatus('error');
     });
   }
+
 
   async function pushLocalToCloud() {
     if (!isFirebaseReady()) return;
@@ -210,6 +221,6 @@ window.V6Store = (function () {
     saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
-    initFirestoreSync
+    initFirestoreSync, getSyncStatus
   };
 })();
