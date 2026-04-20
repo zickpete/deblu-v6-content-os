@@ -32,6 +32,7 @@ class V6Header extends HTMLElement {
           <div class="app-logo-icon" aria-hidden="true">📅</div>
           <span class="app-logo-text">Content OS</span>
           <span class="app-logo-version">V.6</span>
+          <div class="sync-status-dot" id="syncStatusDot" title="Sync Status: Connecting..."></div>
         </a>
 
         <div class="header-breadcrumb" aria-label="Breadcrumb">
@@ -167,6 +168,24 @@ class V6Header extends HTMLElement {
       });
       
       updateHeaderBadge(); // Initial state
+
+      // --- Sync Status Listener ---
+      const syncDot = this.querySelector('#syncStatusDot');
+      window.addEventListener('v6:syncStatus', (e) => {
+        if (!syncDot) return;
+        const status = e.detail.status;
+        syncDot.className = 'sync-status-dot ' + status;
+        
+        let title = 'Sync Status: ';
+        switch(status) {
+          case 'synced':  title += 'Connected & Online'; break;
+          case 'syncing': title += 'Syncing with Cloud...'; break;
+          case 'cached':  title += 'Offline (Using Cache)'; break;
+          case 'error':   title += 'Connection Error'; break;
+          case 'new':     title += 'New Room Initialized'; break;
+        }
+        syncDot.title = title;
+      });
     }, 0);
   }
 }

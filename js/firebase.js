@@ -1,18 +1,14 @@
 /* ================================================
    V.6 Content OS — Firebase Integration
    Single-Document Team Sync Mode
-   Path: deblu_shared_data/{TeamSyncID}
    ================================================ */
 
 (function () {
   'use strict';
 
   const STORAGE_KEY = 'v6_team_sync_id';
-  
-  // Default shared ID if none exists
   let teamId = localStorage.getItem(STORAGE_KEY) || 'DEBLU-V6';
 
-  /* ─── Firebase Config ─── */
   const firebaseConfig = {
     apiKey: 'AIzaSyCZJXFRIVSHiSiwQPwgYxDdmZ1o703t9Wo',
     authDomain: 'deblu-v6.firebaseapp.com',
@@ -23,33 +19,26 @@
     measurementId: 'G-23JN8KWP1R'
   };
 
-  /* ─── Initialize Firebase ─── */
   const app = firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Enable Firestore offline persistence
+  // Robust Persistence for Mobile
   db.enablePersistence({ synchronizeTabs: true })
-    .then(() => console.log('[Firebase] Offline persistence enabled ✅'))
+    .then(() => console.log('[Firebase] Persistence Enabled ✅'))
     .catch((err) => {
-      if (err.code === 'failed-precondition') {
-        console.warn('[Firebase] Persistence: Multiple tabs open.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('[Firebase] Persistence not available in this browser.');
-      }
+      console.warn('[Firebase] Persistence Failed:', err.code);
+      // App continues in memory/cloud mode regardless of local persistence success
     });
 
-  /** Get the primary Firestore document for the current Team */
   function getTeamDoc() {
     return db.collection('deblu_shared_data').doc(teamId);
   }
 
-  /** Update the Team Sync ID and signal a reconnect */
   function setTeamSyncId(newId) {
     if (!newId) return;
     const cleanId = newId.trim().toUpperCase().replace(/\s+/g, '-');
     teamId = cleanId;
     localStorage.setItem(STORAGE_KEY, cleanId);
-    console.log('[Firebase] Team Sync ID updated to:', cleanId);
     window.dispatchEvent(new CustomEvent('v6:teamIdChanged', { detail: { teamId: cleanId } }));
   }
 
@@ -57,18 +46,10 @@
     return teamId;
   }
 
-  /* ─── Expose Global API ─── */
   window.V6Firebase = {
-    app,
-    db,
-    getTeamDoc,
-    setTeamSyncId,
-    getTeamSyncId,
-    isReady: true,
+    app, db, getTeamDoc, setTeamSyncId, getTeamSyncId, isReady: true,
   };
 
-  // Signal that Firebase is ready
   window.dispatchEvent(new CustomEvent('v6:firebaseReady'));
-
-  console.log('[Firebase] V6Firebase initialized (Team ID:', teamId, ') ✅');
+  console.log('[Firebase] Ready (Team:', teamId, ')');
 })();
