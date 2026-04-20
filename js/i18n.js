@@ -20,6 +20,8 @@ window.V6i18n = (function () {
     'header.crumb.calendar':    { th: 'Layer 1: Calendar',       en: 'Layer 1: Calendar' },
     'header.crumb.factory':     { th: 'Layer 2: Factory',        en: 'Layer 2: Factory' },
     'header.back':              { th: '🔙 กลับ',                en: '🔙 Back' },
+    'header.signin':            { th: '🔑 เข้าสู่ระบบ',          en: '🔑 Sign In' },
+    'header.signout':           { th: 'ออกจากระบบ',              en: 'Sign Out' },
 
     /* ═══ COMMON UI ═══ */
     'common.save':              { th: '💾 บันทึก',               en: '💾 Save' },

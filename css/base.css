@@ -873,3 +873,46 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
 }
 
 .form-group { margin-bottom: 20px; }
+
+/* Firebase Auth Button */
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border-base);
+  background: var(--color-surface-glass-heavy);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+.auth-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-body);
+  transform: translateY(-1px);
+}
+.auth-btn.signed-in {
+  background: rgba(74,222,128,0.08);
+  border-color: rgba(74,222,128,0.25);
+  color: #4ade80;
+}
+.auth-btn.signed-in:hover {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.25);
+  color: #f87171;
+}
+.auth-btn-icon {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+.auth-btn-label {
+  letter-spacing: 0.03em;
+}
