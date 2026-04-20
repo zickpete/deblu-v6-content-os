@@ -80,7 +80,8 @@ window.V6AI = (function () {
 
     const map = V6Store.getLayerModels();
     // Default to Layer 0 if available, then global config geminiModel, then hardcode
-    const model = map.layer0 || V6_CONFIG.geminiModel || 'gemini-1.5-pro';
+    let model = map.layer0 || V6_CONFIG.geminiModel || 'gemini-1.5-pro';
+    model = model.replace('models/', '');
     const isDeepThinking = V6Store.getDeepThinkingMode();
 
     if (isDeepThinking) {

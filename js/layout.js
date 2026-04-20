@@ -441,7 +441,7 @@ function initGlobalApiKeyModal() {
 
       models.forEach(m => {
         const id = m.name.replace('models/', '');
-        const entry = { id: m.name, displayName: m.displayName || id };
+        const entry = { id: id, displayName: m.displayName || id };
         if (id.includes('flash-lite')) groups.ultra.items.push(entry);
         else if (id.includes('flash')) groups.standard.items.push(entry);
         else if (id.includes('pro')) groups.advanced.items.push(entry);
