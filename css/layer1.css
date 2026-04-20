@@ -89,6 +89,58 @@
 
 .strategy-bar-actions { display: flex; gap: 8px; align-items: center; }
 
+/* ─── Card Size Slider ─── */
+.card-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: var(--color-surface-glass-heavy);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.card-size-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.card-size-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(166,140,255,0.2), rgba(166,140,255,0.5));
+  outline: none;
+  cursor: pointer;
+}
+.card-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a68cff;
+  border: 2px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(166,140,255,0.4);
+  transition: transform 0.15s;
+}
+.card-size-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.card-size-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a68cff;
+  border: 2px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+
 /* ─── Generate Button ─── */
 .btn-gen-schedule {
   padding: 10px 20px;
@@ -159,19 +211,13 @@
 }
 .cal-cell {
   background: var(--color-surface-glass-heavy);
-  min-height: 140px;
+  min-height: var(--card-min-h, 140px);
   padding: 12px;
-  transition: background 0.2s;
+  transition: background 0.2s, min-height 0.25s ease;
   position: relative;
   border-radius: 12px;
   border: 1px solid var(--color-border-subtle);
-  /* Resizable */
-  resize: vertical;
-  overflow: auto;
-}
-.cal-cell::-webkit-resizer {
-  background: linear-gradient(135deg, transparent 60%, rgba(166,140,255,0.3) 60%, rgba(166,140,255,0.3) 75%, transparent 75%, transparent 85%, rgba(166,140,255,0.3) 85%);
-  border-radius: 0 0 12px 0;
+  overflow: hidden;
 }
 .cal-cell.other-month,
 .cal-cell.empty-slot {
@@ -361,12 +407,8 @@
   max-width: 100%;
   box-sizing: border-box;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  /* Resizable */
-  resize: vertical;
-  overflow: auto;
-}
-.kanban-col .content-card::-webkit-resizer {
-  background: linear-gradient(135deg, transparent 60%, rgba(166,140,255,0.25) 60%, rgba(166,140,255,0.25) 75%, transparent 75%, transparent 85%, rgba(166,140,255,0.25) 85%);
+  min-height: var(--card-min-h, auto);
+  transition: min-height 0.25s ease;
 }
 .kanban-col .card-topic {
   /* Full text visibility - no truncation */

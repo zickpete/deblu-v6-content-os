@@ -84,6 +84,8 @@ window.V6Layer1 = (function () {
       </span>
     `).join('');
 
+    const savedSize = localStorage.getItem('v6_card_size') || '140';
+
     bar.innerHTML = `
       <div class="strategy-bar-info">
         <div class="strategy-month">📅 ${esc(strategy.month)}</div>
@@ -91,6 +93,10 @@ window.V6Layer1 = (function () {
         <div class="strategy-tracks">${trackChips}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="card-size-control">
+          <span class="card-size-label">🔍</span>
+          <input type="range" class="card-size-slider" id="cardSizeSlider" min="80" max="320" value="${savedSize}" step="10" title="Card Size">
+        </div>
         <div class="view-toggle">
           <button class="view-btn active" id="calViewBtn" onclick="V6Layer1.switchView('calendar')" data-i18n="l1.header.calendar">📅 Calendar</button>
           <button class="view-btn" id="kanbanViewBtn" onclick="V6Layer1.switchView('kanban')" data-i18n="l1.header.kanban">📋 Kanban</button>
@@ -103,6 +109,19 @@ window.V6Layer1 = (function () {
         </div>
       </div>
     `;
+
+    // Apply saved size immediately
+    document.documentElement.style.setProperty('--card-min-h', savedSize + 'px');
+
+    // Bind slider
+    const slider = $('cardSizeSlider');
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        document.documentElement.style.setProperty('--card-min-h', val + 'px');
+        localStorage.setItem('v6_card_size', val);
+      });
+    }
 
     // Re-bind generate btn
     const genBtn = $('generateScheduleBtn');
