@@ -238,6 +238,8 @@ window.V6i18n = (function () {
     'l2.error.params':          { th: '⚠️ ไม่พบข้อมูล Content Card (Missing Params)', en: '⚠️ Missing Content Card params' },
     'l2.error.strat':           { th: '⚠️ ไม่พบ Strategy ในระบบ', en: '⚠️ Strategy not found in system' },
     'l2.error.card':            { th: '⚠️ ไม่พบการ์ดที่เลือก',      en: '⚠️ Selected card not found' },
+    'l2.refurl.label':          { th: '🔗 ลิงก์อ้างอิง (Pinterest/Web)', en: '🔗 Reference URL' },
+    'l2.refurl.placeholder':    { th: 'https://pinterest.com/pin/...', en: 'https://pinterest.com/pin/...' },
     'l2.demo.mode':             { th: '🔵 โหลดโหมดสาธิต (ใช้ Card แรกล่าสุด)', en: '🔵 Demo Mode: Loading latest fallback card' },
     'l2.magic.tooShort':        { th: '⚠️ กรุณาเขียนเนื้อหาให้ยาวกว่านี้ก่อนทำการวิเคราะห์', en: '⚠️ Please write more content before analysis' },
     'l2.editor.date':           { th: 'วันที่ลง:',                en: 'Scheduled:' },
