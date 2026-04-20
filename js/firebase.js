@@ -1,11 +1,15 @@
 /* ================================================
    V.6 Content OS — Firebase Integration
-   Shared Firestore (No Auth Required)
-   All devices read/write to the same path
+   Team Collaboration Mode (Dynamic Shared ID)
    ================================================ */
 
 (function () {
   'use strict';
+
+  const STORAGE_KEY = 'v6_team_sync_id';
+  
+  // Default shared ID if none exists
+  let sharedRoot = localStorage.getItem(STORAGE_KEY) || 'DEBLU-DEFAULT';
 
   /* ─── Firebase Config ─── */
   const firebaseConfig = {
@@ -33,17 +37,28 @@
       }
     });
 
-  /* ─── Shared Path (no auth needed) ─── */
-  const SHARED_ROOT = 'deblu';
-
-  /** Get a Firestore doc reference under the shared path */
+  /** Get a Firestore doc reference under the current Team ID */
   function sharedDoc(collection, docId) {
-    return db.collection('shared').doc(SHARED_ROOT).collection(collection).doc(docId);
+    return db.collection('teams').doc(sharedRoot).collection(collection).doc(docId);
   }
 
-  /** Get a Firestore collection reference under the shared path */
+  /** Get a Firestore collection reference under the current Team ID */
   function sharedCollection(collectionName) {
-    return db.collection('shared').doc(SHARED_ROOT).collection(collectionName);
+    return db.collection('teams').doc(sharedRoot).collection(collectionName);
+  }
+
+  /** Update the Team Sync ID and signal a reconnect */
+  function setTeamSyncId(newId) {
+    if (!newId) return;
+    const cleanId = newId.trim().toUpperCase().replace(/\s+/g, '-');
+    sharedRoot = cleanId;
+    localStorage.setItem(STORAGE_KEY, cleanId);
+    console.log('[Firebase] Team Sync ID updated to:', cleanId);
+    window.dispatchEvent(new CustomEvent('v6:teamIdChanged', { detail: { teamId: cleanId } }));
+  }
+
+  function getTeamSyncId() {
+    return sharedRoot;
   }
 
   /* ─── Expose Global API ─── */
@@ -52,11 +67,13 @@
     db,
     sharedDoc,
     sharedCollection,
+    setTeamSyncId,
+    getTeamSyncId,
     isReady: true,
   };
 
   // Signal that Firebase is ready
   window.dispatchEvent(new CustomEvent('v6:firebaseReady'));
 
-  console.log('[Firebase] V6Firebase initialized (shared mode, no auth) ✅');
+  console.log('[Firebase] V6Firebase initialized (Team ID:', sharedRoot, ') ✅');
 })();

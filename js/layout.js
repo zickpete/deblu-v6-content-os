@@ -260,6 +260,30 @@ const AI_MODAL_HTML = `
       <button class="btn btn-secondary" id="clearApiKeyBtn" data-i18n="modal.ai.clear">🗑 ลบ</button>
     </div>
 
+    <!-- ─── Team Sync Section ─── -->
+    <div class="form-group" style="margin-top:24px; padding-top:16px; border-top:1px solid var(--color-border-base);">
+      <label class="form-label">👥 Team Collaboration (Sync ID)</label>
+      <div style="display:flex; gap:8px;">
+        <input
+          class="form-input"
+          type="text"
+          id="teamSyncIdInput"
+          placeholder="Enter Team ID..."
+          style="font-family:monospace; font-weight:bold; letter-spacing:1px;"
+          autocomplete="off"
+        />
+        <button class="btn btn-secondary" id="copyTeamIdBtn" title="Copy ID" style="padding:8px 12px;">📋</button>
+      </div>
+      <div style="margin-top:8px;">
+        <button class="btn btn-primary" id="joinTeamBtn" style="width:100%; background:linear-gradient(135deg, #4ade80 0%, #16a34a 100%);">
+          🚀 Join / Update Team
+        </button>
+      </div>
+      <div style="margin-top:8px; font-size:11px; color:var(--color-text-subtle); line-height:1.4;">
+        📌 <b>How it works:</b> Share this ID with your teammates to work together in real-time. Anyone with this ID can view and edit your content.
+      </div>
+    </div>
+
   </div>
 `;
 
@@ -342,6 +366,35 @@ function initGlobalApiKeyModal() {
     if(overlay) overlay.addEventListener('click', closeAll);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
 
+    // --- Team Sync Logic ---
+    const teamIdInput = document.getElementById('teamSyncIdInput');
+    const joinTeamBtn = document.getElementById('joinTeamBtn');
+    const copyTeamBtn = document.getElementById('copyTeamIdBtn');
+
+    if (joinTeamBtn && teamIdInput) {
+      joinTeamBtn.addEventListener('click', () => {
+        const newId = teamIdInput.value.trim();
+        if (!newId) {
+          showToast('❌ Please enter a Team ID', 'error');
+          return;
+        }
+        if (window.V6Firebase) {
+          V6Firebase.setTeamSyncId(newId);
+          showToast(`✅ Joined Team: ${newId.toUpperCase()}`, 'success');
+          // Close modal after success
+          setTimeout(closeAll, 500);
+        }
+      });
+    }
+
+    if (copyTeamBtn && teamIdInput) {
+      copyTeamBtn.addEventListener('click', () => {
+        teamIdInput.select();
+        document.execCommand('copy');
+        showToast('📋 Team ID Copied!', 'info');
+      });
+    }
+
     // DB Modal Logic
     if (dbBtn) {
       dbBtn.addEventListener('click', () => {
@@ -412,6 +465,12 @@ function initGlobalApiKeyModal() {
       });
       
       if (deepToggle) deepToggle.checked = window.V6Store.getDeepThinkingMode();
+
+      // Team Sync Init
+      const teamIdInput = document.getElementById('teamSyncIdInput');
+      if (teamIdInput && window.V6Firebase) {
+        teamIdInput.value = V6Firebase.getTeamSyncId();
+      }
 
       modal.classList.add('open');
       if(overlay) overlay.classList.add('open');

@@ -1,7 +1,6 @@
 /* ================================================
    V.6 Content OS — Store (Dual-Write State Manager)
-   localStorage (cache) + Firestore (shared cloud sync)
-   No authentication required
+   Team Collaboration Mode (Shared Sync ID)
    ================================================ */
 
 window.V6Store = (function () {
@@ -354,8 +353,7 @@ window.V6Store = (function () {
   }
 
   /* ═══════════════════════════════════════════════════════
-     FIRESTORE REAL-TIME SYNC (Shared Mode)
-     Listeners push cloud changes → localStorage
+     FIRESTORE REAL-TIME SYNC (Team ID Mode)
      ═══════════════════════════════════════════════════════ */
 
   let _unsubStrategies = null;
@@ -363,144 +361,127 @@ window.V6Store = (function () {
   let _unsubSettings = null;
   let _unsubProducts = null;
 
+  function stopSync() {
+    if (_unsubStrategies) _unsubStrategies();
+    if (_unsubCalendars) _unsubCalendars();
+    if (_unsubSettings) _unsubSettings();
+    if (_unsubProducts) _unsubProducts();
+    _unsubStrategies = null;
+    _unsubCalendars = null;
+    _unsubSettings = null;
+    _unsubProducts = null;
+  }
+
   function initFirestoreSync() {
     if (!isFirebaseReady()) return;
-    console.log('[V6Store] 🔄 Setting up Firestore real-time sync (shared mode)...');
+    const teamId = V6Firebase.getTeamSyncId();
+    console.log('[V6Store] 🔄 Setting up Firestore sync for Team:', teamId);
+
+    stopSync(); // Ensure clean slate
 
     // --- Strategies listener ---
     const stratCol = V6Firebase.sharedCollection('strategies');
-    if (stratCol && !_unsubStrategies) {
-      _unsubStrategies = stratCol.onSnapshot((snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-        const cloudStrategies = [];
-        snapshot.forEach(doc => cloudStrategies.push(doc.data()));
-        if (cloudStrategies.length > 0) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudStrategies));
-          console.log('[V6Store] ☁️ Strategies synced from cloud:', cloudStrategies.length);
-          window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'strategies' } }));
-        }
-      }, err => console.warn('[V6Store] Strategies listener error:', err.message));
-    }
+    _unsubStrategies = stratCol.onSnapshot((snapshot) => {
+      if (snapshot.metadata.hasPendingWrites) return;
+      const cloudStrategies = [];
+      snapshot.forEach(doc => cloudStrategies.push(doc.data()));
+      if (cloudStrategies.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudStrategies));
+        console.log('[V6Store] ☁️ Strategies synced (Team:', teamId, ')');
+        window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'strategies' } }));
+      }
+    }, err => console.warn('[V6Store] Sync error (strategies):', err.message));
 
     // --- Calendars listener ---
     const calCol = V6Firebase.sharedCollection('calendars');
-    if (calCol && !_unsubCalendars) {
-      _unsubCalendars = calCol.onSnapshot((snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-        const cloudCalendars = {};
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.cards) cloudCalendars[doc.id] = data.cards;
-        });
-        if (Object.keys(cloudCalendars).length > 0) {
-          localStorage.setItem(CALENDAR_KEY, JSON.stringify(cloudCalendars));
-          console.log('[V6Store] ☁️ Calendars synced from cloud');
-          window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'calendars' } }));
-        }
-      }, err => console.warn('[V6Store] Calendars listener error:', err.message));
-    }
+    _unsubCalendars = calCol.onSnapshot((snapshot) => {
+      if (snapshot.metadata.hasPendingWrites) return;
+      const cloudCalendars = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.cards) cloudCalendars[doc.id] = data.cards;
+      });
+      if (Object.keys(cloudCalendars).length > 0) {
+        localStorage.setItem(CALENDAR_KEY, JSON.stringify(cloudCalendars));
+        console.log('[V6Store] ☁️ Calendars synced (Team:', teamId, ')');
+        window.dispatchEvent(new CustomEvent('v6:cloudSync', { detail: { type: 'calendars' } }));
+      }
+    }, err => console.warn('[V6Store] Sync error (calendars):', err.message));
 
     // --- Settings listener ---
     const settingsRef = V6Firebase.sharedDoc('settings', 'main');
-    if (settingsRef && !_unsubSettings) {
-      _unsubSettings = settingsRef.onSnapshot((doc) => {
-        if (!doc.exists || doc.metadata.hasPendingWrites) return;
-        const data = doc.data();
-        if (data.apiKey !== undefined) localStorage.setItem(API_KEY_KEY, data.apiKey);
-        if (data.layerModels) localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(data.layerModels));
-        if (data.deepThinking !== undefined) localStorage.setItem(THINKING_KEY, data.deepThinking ? 'true' : 'false');
-        console.log('[V6Store] ☁️ Settings synced from cloud');
-        window.dispatchEvent(new CustomEvent('v6:settingsUpdated'));
-      }, err => console.warn('[V6Store] Settings listener error:', err.message));
-    }
+    _unsubSettings = settingsRef.onSnapshot((doc) => {
+      if (!doc.exists || doc.metadata.hasPendingWrites) return;
+      const data = doc.data();
+      if (data.apiKey !== undefined) localStorage.setItem(API_KEY_KEY, data.apiKey);
+      if (data.layerModels) localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(data.layerModels));
+      if (data.deepThinking !== undefined) localStorage.setItem(THINKING_KEY, data.deepThinking ? 'true' : 'false');
+      console.log('[V6Store] ☁️ Settings synced (Team:', teamId, ')');
+      window.dispatchEvent(new CustomEvent('v6:settingsUpdated'));
+    }, err => console.warn('[V6Store] Sync error (settings):', err.message));
 
     // --- Product Reference listener ---
     const productsRef = V6Firebase.sharedDoc('settings', 'products');
-    if (productsRef && !_unsubProducts) {
-      _unsubProducts = productsRef.onSnapshot((doc) => {
-        if (!doc.exists || doc.metadata.hasPendingWrites) return;
-        const data = doc.data();
-        if (data.text !== undefined) localStorage.setItem(PRODUCT_REF_KEY, data.text);
-        console.log('[V6Store] ☁️ Product reference synced from cloud');
-      }, err => console.warn('[V6Store] Products listener error:', err.message));
-    }
+    _unsubProducts = productsRef.onSnapshot((doc) => {
+      if (!doc.exists || doc.metadata.hasPendingWrites) return;
+      const data = doc.data();
+      if (data.text !== undefined) localStorage.setItem(PRODUCT_REF_KEY, data.text);
+      console.log('[V6Store] ☁️ Products synced (Team:', teamId, ')');
+    }, err => console.warn('[V6Store] Sync error (products):', err.message));
   }
 
   /** One-time upload of localStorage data → Firestore */
   async function migrateToCloud() {
     if (!isFirebaseReady()) return;
-    // Use a new flag for the shared path so it triggers again
-    const migrated = localStorage.getItem('v6_firebase_migrated_shared');
-    if (migrated) return;
+    const teamId = V6Firebase.getTeamSyncId();
+    const flagKey = `v6_migrated_${teamId}`;
+    if (localStorage.getItem(flagKey)) return;
 
     const strategies = getAll();
     const calendars = getAllCalendars();
     const apiKey = getApiKey();
     const productRef = localStorage.getItem(PRODUCT_REF_KEY);
     
-    // Only migrate if this device actually has some local data to share
-    const hasDataToMigrate = strategies.length > 0 || Object.keys(calendars).length > 0 || !!apiKey || !!productRef;
+    // Only migrate if there's actually data to share
+    const hasData = strategies.length > 0 || Object.keys(calendars).length > 0 || !!apiKey || !!productRef;
     
-    if (!hasDataToMigrate) {
-      // New device: nothing to push, just mark as migrated so it relies on cloud pull
-      localStorage.setItem('v6_firebase_migrated_shared', new Date().toISOString());
-      console.log('[V6Store] New device detected. Skipping cloud push.');
+    if (!hasData) {
+      localStorage.setItem(flagKey, new Date().toISOString());
+      console.log('[V6Store] New team room empty. Initialized.');
       return;
     }
 
-    console.log('[V6Store] 🚚 Migrating localStorage → Firestore (Shared Mode)...');
+    console.log('[V6Store] 🚚 Migrating local data to Team:', teamId);
     try {
-      for (const s of strategies) {
-        await V6Firebase.sharedDoc('strategies', s.id).set(s);
-      }
-      for (const [stratId, cards] of Object.entries(calendars)) {
-        await V6Firebase.sharedDoc('calendars', stratId).set({ cards, updated_at: new Date().toISOString() });
-      }
+      for (const s of strategies) await V6Firebase.sharedDoc('strategies', s.id).set(s);
+      for (const [id, cards] of Object.entries(calendars)) await V6Firebase.sharedDoc('calendars', id).set({ cards, updated_at: new Date().toISOString() });
       
       const models = getLayerModels();
       const deep = getDeepThinkingMode();
-      // Use merge: true so we don't overwrite existing shared settings if they exist
-      await V6Firebase.sharedDoc('settings', 'main').set({
-        apiKey: apiKey || '', layerModels: models, deepThinking: deep,
-        updated_at: new Date().toISOString()
-      }, { merge: true });
+      await V6Firebase.sharedDoc('settings', 'main').set({ apiKey: apiKey || '', layerModels: models, deepThinking: deep, updated_at: new Date().toISOString() }, { merge: true });
       
-      if (productRef) {
-        await V6Firebase.sharedDoc('settings', 'products').set({
-          text: productRef, updated_at: new Date().toISOString()
-        }, { merge: true });
-      }
-      localStorage.setItem('v6_firebase_migrated_shared', new Date().toISOString());
-      console.log('[V6Store] ✅ Shared Migration complete!');
+      if (productRef) await V6Firebase.sharedDoc('settings', 'products').set({ text: productRef, updated_at: new Date().toISOString() }, { merge: true });
+      
+      localStorage.setItem(flagKey, new Date().toISOString());
+      console.log('[V6Store] ✅ Migration to', teamId, 'complete!');
     } catch (err) {
       console.error('[V6Store] Migration error:', err);
     }
   }
 
-  /* ─── Cross-tab Sync (legacy) ─── */
-  function initStorageListener() {
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'v6_settings') {
-        try {
-          const settings = JSON.parse(e.newValue || '{}');
-          if (settings.apiKey) {
-            localStorage.setItem(API_KEY_KEY, settings.apiKey);
-            window.dispatchEvent(new CustomEvent('v6:settingsUpdated'));
-          }
-        } catch(err) {}
-      }
-    });
-  }
-
   /* ─── Auto-Init ─── */
   if (typeof window !== 'undefined') {
-    initStorageListener();
-
-    // When Firebase is ready, migrate & start sync
+    // When Firebase is ready, start sync
     window.addEventListener('v6:firebaseReady', () => {
-      migrateToCloud().then(() => {
-        initFirestoreSync();
-      });
+      migrateToCloud().then(() => initFirestoreSync());
+    });
+
+    // When Team ID changes, restart everything
+    window.addEventListener('v6:teamIdChanged', () => {
+      console.log('[V6Store] Team ID changed! Reconnecting...');
+      // Note: We don't clear localStorage here to allow "merging" if the user wants,
+      // but in a production app you might want to confirm if they want to wipe local data.
+      migrateToCloud().then(() => initFirestoreSync());
     });
   }
 
@@ -511,7 +492,7 @@ window.V6Store = (function () {
     saveGeminiModel, getGeminiModel, saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference, parseProductCSV,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
-    resetCalendarPlan, initStorageListener,
-    initFirestoreSync, migrateToCloud,
+    resetCalendarPlan, 
+    initFirestoreSync, migrateToCloud, stopSync
   };
 })();
