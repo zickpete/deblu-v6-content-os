@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layer 0: The Brain — V.6 Content OS | Deblu Thailand</title>
+  <meta name="description" content="AI-driven monthly content strategy generator for Deblu Thailand. Generate 3-track campaign strategies with mood, theme, and content ratios." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layer0.css" />
+
+  <style>
+    /* Product dropdown */
+    .tag-input-wrapper { position: relative; }
+    #productDropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      z-index: 500;
+      background: rgba(7,14,31,0.96);
+      border: 1px solid rgba(166,140,255,0.3);
+      border-radius: 12px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    }
+    .product-suggestion {
+      background: transparent;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .product-suggestion:hover { background: rgba(166,140,255,0.12); color: #c4b5fd; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <v6-header active-layer="0"></v6-header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main-content" role="main" id="mainContent">
+
+      <!-- Page Title Block -->
+      <div class="page-title-block">
+        <div>
+          <h1 class="page-title text-gradient" data-i18n="l0.title">Monthly Strategy Generator</h1>
+          <p class="page-subtitle" data-i18n="l0.subtitle">กำหนด parameters → AI สร้าง 3-track campaign strategy พร้อม Mood &amp; Tone สำหรับเดือนนั้น</p>
+        </div>
+      </div>
+
+      <!-- ═══ LEFT: SETUP PANEL ═══ -->
+      <aside class="setup-panel" aria-label="Strategy Setup">
+        <div class="glass-card">
+          <div class="panel-title" data-i18n="l0.setup.title">
+            ⚙️ ตั้งค่าเดือนใหม่
+          </div>
+
+          <!-- Month & Year Picker (Modern Dual Dropdown) -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="l0.month.label">📅 เดือนและปี</label>
+            <div class="month-year-picker" id="monthYearPicker">
+              <div class="myp-select-wrap">
+                <select class="myp-select" id="monthPick" aria-label="Select month">
+                  <option value="January" data-i18n="month.jan">มกราคม</option>
+                  <option value="February" data-i18n="month.feb">กุมภาพันธ์</option>
+                  <option value="March" data-i18n="month.mar">มีนาคม</option>
+                  <option value="April" data-i18n="month.apr">เมษายน</option>
+                  <option value="May" data-i18n="month.may">พฤษภาคม</option>
+                  <option value="June" data-i18n="month.jun">มิถุนายน</option>
+                  <option value="July" data-i18n="month.jul">กรกฎาคม</option>
+                  <option value="August" data-i18n="month.aug">สิงหาคม</option>
+                  <option value="September" data-i18n="month.sep">กันยายน</option>
+                  <option value="October" data-i18n="month.oct">ตุลาคม</option>
+                  <option value="November" data-i18n="month.nov">พฤศจิกายน</option>
+                  <option value="December" data-i18n="month.dec">ธันวาคม</option>
+                </select>
+                <span class="myp-icon">📅</span>
+              </div>
+              <span class="myp-divider"></span>
+              <div class="myp-select-wrap">
+                <select class="myp-select" id="yearPick" aria-label="Select year">
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+                <span class="myp-icon">📆</span>
+              </div>
+            </div>
+            <!-- Hidden composite value for generate function -->
+            <input type="hidden" id="monthSelect" />
+          </div>
+
+          <!-- Core Products Tag Input -->
+          <div class="form-group">
+            <label class="form-label" for="tagInput" data-i18n="l0.products.label">👟 สินค้าหลัก</label>
+            <div class="tag-input-wrapper">
+              <div class="tag-input-container" id="tagContainer" role="group" aria-label="Selected products">
+                <!-- Tag bubbles injected here -->
+                <input
+                  class="tag-real-input"
+                  id="tagInput"
+                  type="text"
+                  placeholder="พิมพ์รหัสสินค้า + Enter…"
+                  data-i18n-placeholder="l0.products.placeholder"
+                  autocomplete="off"
+                  aria-label="Add product code"
+                />
+              </div>
+              <div id="productDropdown" role="listbox" aria-label="Product suggestions"></div>
+            </div>
+            <div style="margin-top:6px;font-size:11px;color:#334155;" data-i18n="l0.products.hint">
+              พิมพ์รหัสสินค้า แล้วกด Enter หรือเลือกจาก dropdown
+            </div>
+          </div>
+
+          <!-- Special Events -->
+          <div class="form-group">
+            <label class="form-label" for="eventsTextarea" data-i18n="l0.events.label">🎉 โปรโมชั่น / กิจกรรมพิเศษ</label>
+            <textarea
+              class="form-textarea"
+              id="eventsTextarea"
+              rows="4"
+              placeholder="เช่น Songkran Festival, 4.4 Sale 30%, Mother's Day Campaign..."
+              data-i18n-placeholder="l0.events.placeholder"
+              aria-label="Special events and promotions"
+            ></textarea>
+          </div>
+
+          <!-- Generate Button -->
+          <button
+            class="btn btn-primary btn-generate"
+            id="generateBtn"
+            aria-label="Generate Monthly Strategy with AI"
+          >
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-label" data-i18n="l0.generate">✨ สร้างกลยุทธ์ประจำเดือน</span>
+          </button>
+        </div>
+
+        <!-- History Panel -->
+        <div class="history-section">
+          <div class="history-header" data-i18n="l0.history">📂 กลยุทธ์ล่าสุด</div>
+          <div id="historyList">
+            <div style="font-size:12px;color:#334155;" data-i18n="l0.history.empty">ยังไม่มีกลยุทธ์</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ═══ RIGHT: OUTPUT COLUMN ═══ -->
+      <section class="output-column" id="outputColumn" aria-label="Generated Strategy" aria-live="polite">
+        <!-- Empty State (initial) -->
+        <div class="empty-state">
+          <div class="empty-icon" aria-hidden="true">🧠</div>
+          <h2 class="empty-title" data-i18n="l0.empty.title">รอ Parameters ของคุณ</h2>
+          <p class="empty-desc">
+            <span data-i18n="l0.empty.desc">เลือกเดือน, เพิ่มสินค้า และระบุ Events แล้วกด</span><br/>
+            <strong style="color:#a68cff;" data-i18n="l0.generate">✨ สร้างกลยุทธ์ประจำเดือน</strong><br/>
+            <span data-i18n="l0.empty.desc2">AI จะสร้าง 3-track campaign strategy ให้ทันที</span>
+          </p>
+        </div>
+      </section>
+
+    </main>
+    <!-- End Main -->
+
+  </div>
+  <!-- End App Wrapper -->
+
+
+
+  <!-- ═══ TOAST ═══ -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ═══ Scripts ═══ -->
+  <script src="js/i18n.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/scratch.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/layer0.js"></script>
+
+</body>
+</html>

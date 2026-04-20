@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layer 1: Calendar Engine — V.6 Content OS | Deblu Thailand</title>
+  <meta name="description" content="AI-powered monthly content calendar generator for Deblu Thailand. Automated distribution across campaign tracks with drag-and-drop scheduling." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layer1.css" />
+
+  <style>
+    /* ─── Page Layout ─── */
+    .l1-main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <v6-header active-layer="1"></v6-header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="l1-main" role="main" id="mainContent" aria-live="polite">
+
+      <!-- Page Title -->
+      <div class="page-title-block" style="margin-bottom:16px;">
+        <div>
+          <h1 class="page-title text-gradient" data-i18n="l1.title">Calendar <span style="-webkit-text-fill-color:inherit;">Engine</span></h1>
+          <p class="page-subtitle" data-i18n="l1.subtitle">Algorithm แจก ContentCard → AI สร้าง Topic → Drag &amp; Drop จัดตาราง</p>
+        </div>
+      </div>
+
+      <!-- Locked Banner -->
+      <div class="locked-banner" id="lockedBanner" role="status">
+        <span style="font-size:24px;">🔒</span>
+        <div>
+          <div class="locked-banner-text" data-i18n="l1.locked.text">Calendar ถูก Lock แล้ว — พร้อม Execution!</div>
+          <div class="locked-banner-sub" data-i18n="l1.locked.sub">ใช้ Kanban Board เพื่อ Track สถานะของแต่ละโพสต์</div>
+        </div>
+        <a href="layer0-brain.html" class="btn btn-secondary" style="margin-left:auto;font-size:11px;padding:7px 14px;text-decoration:none;" data-i18n="l1.locked.newstrategy">+ Strategy ใหม่</a>
+      </div>
+
+      <!-- Strategy Bar (populated by JS) -->
+      <div class="strategy-bar" id="strategyBar">
+        <div style="color:#334155;font-size:13px;" data-i18n="l1.loading">⏳ กำลังโหลด Strategy...</div>
+      </div>
+
+      <!-- ═══ Calendar View ═══ -->
+      <div class="view-panel active" id="calendarView" role="region" aria-label="Calendar View">
+        <div id="calGridWrap">
+          <!-- Populated by V6Layer1 -->
+        </div>
+      </div>
+
+      <!-- ═══ Kanban View ═══ -->
+      <div class="view-panel" id="kanbanView" role="region" aria-label="Kanban Board">
+        <div class="kanban-board" id="kanbanBoard">
+          <!-- Populated by V6Layer1 -->
+        </div>
+      </div>
+
+      <!-- ═══ Action Footer ═══ -->
+      <div class="action-footer" id="actionFooter">
+        <div style="font-size:12px;color:#334155;" data-i18n="l1.action.hint">กด ✨ สร้าง Schedule เพื่อเริ่มต้น</div>
+      </div>
+
+    </main>
+  </div>
+
+
+  <!-- ═══ Card Detail Modal Overlay ═══ -->
+  <div id="cardDetailOverlay"></div>
+
+  <!-- ═══ Card Detail Modal ═══ -->
+  <div id="cardDetailModal" role="dialog" aria-modal="true" aria-label="Card Detail" class="card-detail-modal">
+    <!-- Populated by V6Layer1.openCardDetail() -->
+  </div>
+
+  <!-- ═══ Toast ═══ -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ═══ Scripts ═══ -->
+  <script src="js/i18n.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/scratch.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/scheduler.js"></script>
+  <script src="js/layer1.js"></script>
+
+</body>
+</html>
+

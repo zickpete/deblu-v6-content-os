@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>V.6 Content OS — Deblu Thailand</title>
+  <meta name="description" content="V.6 Content OS: AI-driven content management system for Deblu Thailand footwear brand." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800;900&family=Noto+Sans+Thai:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/base.css" />
+  <style>
+    .hub-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .hub-logo {
+      font-size: 52px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 30px rgba(166,140,255,0.5));
+    }
+    .hub-title {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #a68cff, #ff6c95, #81ecff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .hub-sub {
+      font-size: 16px;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 56px;
+      font-weight: 500;
+    }
+    .layers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 960px;
+      width: 100%;
+    }
+    .layer-card {
+      padding: 32px;
+      border-radius: 28px;
+      background: rgba(15,23,42,0.5);
+      backdrop-filter: blur(32px);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .layer-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(166,140,255,0.07), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .layer-card:hover::before { opacity: 1; }
+    .layer-card.active {
+      border-color: rgba(166,140,255,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(166,140,255,0.1);
+    }
+    .layer-card.active:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(166,140,255,0.2);
+    }
+    .layer-card.locked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .layer-icon { font-size: 32px; }
+    .layer-num {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #475569;
+    }
+    .layer-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: #f8fafc;
+      letter-spacing: -0.02em;
+    }
+    .layer-desc {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.65;
+    }
+    .layer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      width: fit-content;
+      margin-top: 4px;
+    }
+    .layer-badge.ready        { background: rgba(166,140,255,0.12); border: 1px solid rgba(166,140,255,0.3); color: #c4b5fd; }
+    .layer-badge.coming-soon  { background: rgba(71,85,105,0.12);   border: 1px solid rgba(71,85,105,0.3);   color: #475569; }
+    .hub-footer {
+      margin-top: 48px;
+      font-size: 12px;
+      color: #334155;
+      text-align: center;
+    }
+
+    /* BG Orbs */
+    .bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.5; animation: orbFloat 22s ease-in-out infinite; }
+    .orb-1 { width: 600px; height: 600px; top:-15%; left:-10%; background: radial-gradient(circle, rgba(166,140,255,0.6), transparent 70%); }
+    .orb-2 { width: 500px; height: 500px; top: 8%; right:-8%; background: radial-gradient(circle, rgba(129,236,255,0.5), transparent 70%); animation-delay:-8s; }
+    .orb-3 { width: 400px; height: 400px; bottom:-8%; left:30%; background: radial-gradient(circle, rgba(255,108,149,0.4), transparent 70%); animation-delay:-16s; }
+    @keyframes orbFloat {
+      0%,100%{transform:translate(0,0) scale(1);}
+      33%{transform:translate(2%,4%) scale(1.05);}
+      66%{transform:translate(-2%,-3%) scale(0.97);}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <main class="hub-wrapper" role="main">
+    <div class="hub-logo" aria-hidden="true">🚀</div>
+    <h1 class="hub-title">V.6 Content OS</h1>
+    <p class="hub-sub" data-i18n="hub.subtitle">AI-Driven Content Management System · Deblu Thailand 🇹🇭</p>
+
+    <!-- Language Toggle (standalone for hub page) -->
+    <div class="lang-toggle" id="langToggle" style="position:fixed;top:20px;right:24px;z-index:100;" role="radiogroup" aria-label="Language">
+      <button class="lang-opt lang-th active" onclick="V6i18n.toggle()" aria-label="Thai">TH</button>
+      <button class="lang-opt lang-en" onclick="V6i18n.toggle()" aria-label="English">EN</button>
+    </div>
+
+    <div class="layers-grid">
+      <!-- Layer 0 -->
+      <a href="layer0-brain.html" class="layer-card active" aria-label="Layer 0: The Brain — Monthly Strategy Module">
+        <div class="layer-icon" aria-hidden="true">🧠</div>
+        <div class="layer-num">Layer 0</div>
+        <div class="layer-name" data-i18n="hub.layer0.name">The Brain</div>
+        <div class="layer-desc" data-i18n="hub.layer0.desc">
+          AI Monthly Strategy Generator — กำหนด parameter แล้วให้ AI สร้าง 3-track campaign strategy พร้อม Mood &amp; Tone
+        </div>
+        <div class="layer-badge ready" data-i18n="hub.badge.ready">✅ พร้อมใช้งาน</div>
+      </a>
+
+      <!-- Layer 1 -->
+      <a href="layer1-calendar.html" class="layer-card active" aria-label="Layer 1: Calendar Engine">
+        <div class="layer-icon" aria-hidden="true">📅</div>
+        <div class="layer-num">Layer 1</div>
+        <div class="layer-name" data-i18n="hub.layer1.name">The Calendar</div>
+        <div class="layer-desc" data-i18n="hub.layer1.desc">
+          AI Content Calendar — รับ strategy จาก Layer 0 แล้วสร้าง 30-day post schedule พร้อม Drag &amp; Drop
+        </div>
+        <div class="layer-badge ready" data-i18n="hub.badge.ready">✅ พร้อมใช้งาน</div>
+      </a>
+
+      <!-- Layer 2 -->
+      <a href="layer2-cards.html" class="layer-card active" aria-label="Layer 2: Post Factory">
+        <div class="layer-icon" aria-hidden="true">🃏</div>
+        <div class="layer-num">Layer 2</div>
+        <div class="layer-name" data-i18n="hub.layer2.name">Post Factory</div>
+        <div class="layer-desc" data-i18n="hub.layer2.desc">
+          AI Post Editor — ลงลึกในแต่ละ Content Card เขียนแคปชั่น &amp; พาดหัวด้วย AI Tools Drawer
+        </div>
+        <div class="layer-badge ready" data-i18n="hub.badge.ready">✅ พร้อมใช้งาน</div>
+      </a>
+
+      <!-- Layer 3 -->
+      <div class="layer-card locked" aria-label="Layer 3: Analytics — Coming Soon">
+        <div class="layer-icon" aria-hidden="true">📊</div>
+        <div class="layer-num">Layer 3</div>
+        <div class="layer-name" data-i18n="hub.layer3.name">Analytics</div>
+        <div class="layer-desc" data-i18n="hub.layer3.desc">
+          Performance Dashboard — Track engagement, วัดผล KPI และให้ AI วิเคราะห์ผลงานประจำเดือน
+        </div>
+        <div class="layer-badge coming-soon" data-i18n="hub.badge.coming">🔒 เร็วๆ นี้</div>
+      </div>
+    </div>
+
+    <div class="hub-footer" data-i18n="hub.footer">
+      V.6 Content OS · Deblu Thailand · สร้างด้วย ✨ AI
+    </div>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/scratch.js"></script>
+  <!-- Listen for lang changes to update toggle on hub page -->
+  <script>
+    window.addEventListener('v6:langChange', function(e) {
+      var lang = e.detail.lang;
+      var th = document.querySelector('.lang-th');
+      var en = document.querySelector('.lang-en');
+      if (th) th.classList.toggle('active', lang === 'th');
+      if (en) en.classList.toggle('active', lang === 'en');
+    });
+    // Set initial state
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof V6i18n !== 'undefined') {
+        var lang = V6i18n.getLang();
+        var th = document.querySelector('.lang-th');
+        var en = document.querySelector('.lang-en');
+        if (th) th.classList.toggle('active', lang === 'th');
+        if (en) en.classList.toggle('active', lang === 'en');
+      }
+    });
+  </script>
+</body>
+</html>

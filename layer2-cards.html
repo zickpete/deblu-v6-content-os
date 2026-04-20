@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layer 2: Post Factory — V.6 Content OS | Deblu Thailand</title>
+  <meta name="description" content="AI Content Editor with Drawer Tools for Deblu Thailand." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layer2.css" />
+
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <v6-header active-layer="2"></v6-header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="l2-main" role="main" id="mainContent">
+      
+      <!-- Card Info Bar -->
+      <div class="card-info-bar" id="cardInfoBar">
+        <div class="cib-left">
+          <span class="cib-track-badge" id="cibTrackBadge"><span id="cibTrackDot" class="ratio-dot"></span> <span id="cibTrackName" data-i18n="l2.loading.track">กำลังโหลด...</span></span>
+          <span class="cib-topic thai-text" id="cibTopic" data-i18n="l2.loading.topic">กำลังโหลด Topic...</span>
+        </div>
+        <div class="cib-date-edit">
+          <input type="date" id="editorDate" class="editor-date-input" aria-label="Change content date">
+        </div>
+        <div class="cib-actions">
+          <button id="editorSaveBtn" class="btn-save-fab">
+            <span class="btn-lbl" data-i18n="l2.btn.save">💾 Save</span>
+          </button>
+          <button id="editorDeleteBtn" class="btn-delete-icon" title="Delete this card" aria-label="Delete card" data-i18n-title="l2.btn.delete.title">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div class="l2-split-container">
+        
+        <!-- ═══ LEFT: THE EDITOR (70%) ═══ -->
+        <section class="editor-pane" aria-label="Content Editor">
+          
+          <input type="text" class="notion-input editor-headline thai-text" id="editorHeadline" placeholder="💡 ใส่พาดหัว (Headline) ที่นี่..." data-i18n-placeholder="l2.editor.headline.ph" />
+          <textarea class="notion-input editor-caption auto-resize thai-text" id="editorCaption" placeholder="📝 เริ่มเขียนเนื้อหา (Caption) โพสต์ของคุณได้เลย..." data-i18n-placeholder="l2.editor.caption.ph"></textarea>
+          
+          <div class="editor-meta-group">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" data-i18n="l2.hashtags.label">#️⃣ แฮชแท็ก</label>
+              <input type="text" class="form-input thai-text" id="editorHashtags" placeholder="#รองเท้าสุขภาพ #Deblu" data-i18n-placeholder="l2.hashtags.placeholder" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label" data-i18n="l2.status.label">📊 สถานะ</label>
+              <select class="form-select" id="editorStatus">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="editor-footer-actions">
+            <button class="btn-back-link" id="backToCalendarBtn" data-i18n="l2.btn.back">
+              🔙 Back to Calendar
+            </button>
+          </div>
+
+          <!-- Magic Analysis Overlay (Hidden by default) -->
+          <div class="magic-overlay" id="magicOverlay">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div class="magic-score-circle" id="magicScore">--</div>
+              <button class="btn-icon" onclick="V6Layer2.closeMagicOverlay()">✕</button>
+            </div>
+            <div style="font-size:16px; font-weight:800; color:#f8fafc; margin-bottom:12px;" data-i18n="l2.magic.result">✨ ผลวิเคราะห์จาก AI</div>
+            <div id="magicSuggestions">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ═══ RIGHT: THE DRAWER (30%) ═══ -->
+        <aside class="drawer-pane" aria-label="AI Tools Drawer">
+          <div class="drawer-header">
+            <span data-i18n="l2.drawer.title">🧰 เครื่องมือ AI</span>
+          </div>
+          <div class="drawer-content" id="drawerContent">
+            <!-- Dynamically populated via V6Layer2.renderTools() -->
+          </div>
+          
+          <!-- Magic Analysis Trigger (Sticky bottom of Drawer or Editor?) The user said "At the bottom [of the Editor], a prominent Magic Analysis button". But placing it in drawer bottom keeps editor clean. Let's place it at the Editor bottom as requested! -->
+        </aside>
+
+      </div>
+      
+      <!-- Moved to Editor Pane Bottom -->
+      <button class="magic-analysis-btn" id="magicAnalysisBtn" onclick="V6Layer2.runMagicAnalysis()" style="width: auto; position: absolute; bottom: 32px; right: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" data-i18n="l2.magic.btn">
+        วิเคราะห์ด้วย AI
+      </button>
+
+    </main>
+  </div>
+
+
+  <!-- ═══ Toast ═══ -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ═══ Scripts ═══ -->
+  <script src="js/i18n.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/scratch.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/layer2.js"></script>
+
+</body>
+</html>
+

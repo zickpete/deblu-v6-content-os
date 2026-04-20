@@ -1,0 +1,414 @@
+/* ================================================
+   V.6 Content OS — Layer 2: The Factory
+   Component-specific styles
+   ================================================ */
+
+.l2-main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: calc(100vh - 68px); /* Full height minus header */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Breadcrumb/Card Info Bar ─── */
+.card-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.cib-left { display: flex; align-items: center; gap: 16px; }
+.cib-track-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 9999px; font-size: 11px; font-weight: 800; text-transform: uppercase;
+  background: var(--color-surface-hover); border: 1px solid var(--color-border-base);
+}
+.cib-topic { font-size: 15px; font-weight: 700; color: var(--color-text-main); }
+.cib-date { font-size: 12px; color: var(--color-text-subtle); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+/* ─── Editor Actions ─── */
+.cib-date-edit { margin-left: auto; margin-right: 16px; }
+.editor-date-input {
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  color: var(--color-text-main);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  outline: none;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.editor-date-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(129,236,255,0.2);
+}
+
+.cib-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn-save-fab {
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-spring);
+  box-shadow: 0 4px 15px rgba(166,140,255,0.3);
+}
+.btn-save-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(166,140,255,0.4);
+  filter: brightness(1.1);
+}
+.btn-save-fab.saved {
+  background: #10b981;
+  box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+}
+
+.btn-delete-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+.btn-delete-icon:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.editor-footer-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-back-link {
+  background: transparent;
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-subtle);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-back-link:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-main);
+  border-color: var(--color-border-base);
+}
+
+/* ─── Split Screen Layout ─── */
+.l2-split-container {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 0; /* Important for scrollable children */
+}
+
+/* ─── Left Side: The Editor ─── */
+.editor-pane {
+  flex: 7; /* 70% approximate */
+  background: var(--color-surface-glass-heavy);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: inset 0 2px 20px rgba(0,0,0,0.2);
+}
+
+.editor-pane::-webkit-scrollbar { width: 6px; }
+.editor-pane::-webkit-scrollbar-thumb { background: var(--color-border-base); border-radius: 10px; }
+
+/* Notion-style Typography Inputs */
+.notion-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-main);
+  font-family: var(--font-body);
+  resize: none;
+}
+.notion-input::placeholder { color: rgba(148, 163, 184, 0.3); font-style: italic; }
+
+.editor-headline {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.editor-caption {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-text-body);
+  min-height: 200px;
+}
+
+.editor-meta-group {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-surface-hover);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Magic Analysis Button */
+.magic-analysis-btn {
+  margin-top: 24px;
+  padding: 16px;
+  width: 100%;
+  background: linear-gradient(135deg, rgba(166,140,255,0.15), rgba(129,236,255,0.15));
+  border: 1px solid rgba(166,140,255,0.3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-main);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s;
+  position: sticky;
+  bottom: 0;
+  backdrop-filter: blur(8px);
+}
+.magic-analysis-btn:hover {
+  background: linear-gradient(135deg, rgba(166,140,255,0.25), rgba(129,236,255,0.25));
+  box-shadow: 0 8px 30px rgba(166,140,255,0.2);
+  transform: translateY(-2px);
+}
+
+/* ─── Right Side: The Drawer ─── */
+.drawer-pane {
+  flex: 3; /* 30% approximate */
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.drawer-header {
+  padding: 20px 24px;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid var(--color-surface-hover);
+  font-size: 14px;
+  font-weight: 900;
+  color: #81ecff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  position: relative; /* Fixed: Parent relative positioning */
+}
+.drawer-content::-webkit-scrollbar { width: 4px; }
+.drawer-content::-webkit-scrollbar-thumb { background: var(--color-border-base); border-radius: 4px; }
+
+/* Accordions */
+.accordion {
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--color-surface-hover);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.accordion.open {
+  background: var(--color-surface-hover);
+  border-color: rgba(166,140,255,0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.accordion-header {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-text-body);
+  user-select: none;
+  transition: background 0.2s;
+}
+.accordion-header:hover { background: rgba(255,255,255,0.03); }
+.accordion-icon { font-size: 16px; margin-right: 8px; }
+.accordion-toggle { color: var(--color-text-subtle); transition: transform 0.4s var(--ease-spring); font-size: 12px; }
+.accordion.open .accordion-toggle { transform: rotate(180deg); color: var(--accent-purple); }
+
+.accordion-body {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s;
+}
+.accordion.open .accordion-body {
+  padding: 4px 16px 16px;
+  max-height: 1200px; /* Increased for multiple outputs */
+}
+
+/* Tool Buttons (Compact Design) */
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 14px; /* Reduced padding for compactness */
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  color: var(--color-text-body);
+  font-family: var(--font-body);
+  font-size: 13px; /* Slightly larger for readability */
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.tool-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: rgba(166,140,255,0.3);
+  color: var(--color-text-main);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.tool-icon {
+  font-size: 14px;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));
+}
+
+/* Inline Output Area */
+.tool-output {
+  margin: 4px 0 12px 14px;
+  border-left: 2px solid var(--accent-purple);
+  padding: 10px 14px;
+  background: linear-gradient(90deg, rgba(166,140,255,0.08), transparent);
+  border-radius: 0 8px 8px 0;
+  font-size: 12px;
+  color: var(--color-text-body);
+  line-height: 1.6;
+  display: none;
+  animation: fadeInUp 0.3s ease-out;
+}
+.tool-output.show { display: block; }
+.tool-output.loading { color: var(--color-text-muted); font-style: italic; }
+
+/* ─── Magic Analysis Overlay ─── */
+.magic-overlay {
+  position: absolute;
+  top: 24px; right: 24px;
+  width: 320px;
+  background: var(--color-surface-glass-solid);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(129,236,255,0.3);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,236,255,0.1);
+  display: none;
+  animation: slideInRight 0.4s var(--ease-spring);
+  z-index: 10;
+}
+.magic-overlay.show { display: block; }
+
+.magic-score-circle {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(129,236,255,0.2), transparent);
+  border: 2px solid var(--accent-cyan);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 900; color: var(--accent-cyan);
+  margin-bottom: 16px;
+  box-shadow: 0 0 20px rgba(129,236,255,0.3);
+}
+
+.magic-suggestion {
+  display: flex; gap: 10px; margin-bottom: 12px; font-size: 13px; color: #cbd5e1; line-height: 1.5;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Skeleton / Utilities ─── */
+.auto-resize { overflow: hidden; }
+
+/* tool-apply-btn inside tool-output */
+.tool-apply-btn {
+  display: block;
+  margin-top: 10px;
+  background: rgba(166,140,255,0.15);
+  border: 1px solid rgba(166,140,255,0.4);
+  color: #c4b5fd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+.tool-apply-btn:hover {
+  background: var(--accent-purple);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(166,140,255,0.4);
+}
+
+@media (max-width: 1024px) {
+  .l2-split-container { flex-direction: column; }
+  .drawer-pane { flex: none; height: 400px; }
+  .l2-main { height: auto; }
+}
