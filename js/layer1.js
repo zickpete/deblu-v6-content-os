@@ -522,11 +522,63 @@ window.V6Layer1 = (function () {
         <button class="btn btn-primary" style="flex:1;" onclick="V6Layer1.updateCardStatus('${card.id}')">${V6i18n.t('common.save')}</button>
         <button class="btn btn-secondary" onclick="window.location.href='layer2-cards.html?strategyId=${state.strategy.id}&cardId=${card.id}'">${V6i18n.t('l1.modal.edit')}</button>
       </div>
+      <div class="modal-resize-handle" id="modalResizeHandle"></div>
     `;
+
+    // Restore saved size
+    const savedW = localStorage.getItem('v6_modal_w');
+    const savedH = localStorage.getItem('v6_modal_h');
+    if (savedW) modal.style.width = savedW + 'px';
+    if (savedH) modal.style.height = savedH + 'px';
 
     // Show both modal and overlay
     modal.classList.add('open');
     if (overlay) overlay.classList.add('open');
+
+    // Bind resize handle
+    bindModalResize(modal);
+  }
+
+  /* ─── Modal Resize Logic ─── */
+  function bindModalResize(modal) {
+    const handle = modal.querySelector('#modalResizeHandle');
+    if (!handle) return;
+
+    let startX, startY, startW, startH;
+
+    function onMouseDown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      startX = e.clientX;
+      startY = e.clientY;
+      startW = modal.offsetWidth;
+      startH = modal.offsetHeight;
+      modal.classList.add('resizing');
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+
+    function onMouseMove(e) {
+      // Since modal is centered with translate(-50%, -50%),
+      // dragging right/down = expand by 2× the delta (to keep it centered)
+      const dw = (e.clientX - startX) * 2;
+      const dh = (e.clientY - startY) * 2;
+      const newW = Math.max(320, Math.min(startW + dw, window.innerWidth - 40));
+      const newH = Math.max(280, Math.min(startH + dh, window.innerHeight - 40));
+      modal.style.width = newW + 'px';
+      modal.style.height = newH + 'px';
+    }
+
+    function onMouseUp() {
+      modal.classList.remove('resizing');
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      // Persist
+      localStorage.setItem('v6_modal_w', parseInt(modal.style.width));
+      localStorage.setItem('v6_modal_h', parseInt(modal.style.height));
+    }
+
+    handle.addEventListener('mousedown', onMouseDown);
   }
 
   /* ─── Close Card Detail Modal ─── */

@@ -612,7 +612,60 @@ window.V6Layer2 = (function () {
       console.log('[Layer2] Running in Blank Draft mode - limited functionality');
     }
 
+    // STEP 7: Bind resizable split pane
+    initSplitResize();
+
     console.log('[Layer2] Initialization complete ✅');
+  }
+
+  /* ─── Resizable Split Pane ─── */
+  function initSplitResize() {
+    const container = document.querySelector('.l2-split-container');
+    const handle = $('splitResizeHandle');
+    const editor = document.querySelector('.editor-pane');
+    const drawer = document.querySelector('.drawer-pane');
+    if (!container || !handle || !editor || !drawer) return;
+
+    // Restore saved ratio
+    const savedRatio = localStorage.getItem('v6_split_ratio');
+    if (savedRatio) {
+      const ratio = parseFloat(savedRatio);
+      editor.style.flex = `0 0 ${ratio}%`;
+      drawer.style.flex = `0 0 ${100 - ratio - 1}%`;
+    }
+
+    let startX, startEditorW;
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startX = e.clientX;
+      startEditorW = editor.getBoundingClientRect().width;
+      container.classList.add('resizing');
+      handle.classList.add('active');
+
+      const onMove = (e) => {
+        const dx = e.clientX - startX;
+        const containerW = container.getBoundingClientRect().width;
+        const newEditorW = startEditorW + dx;
+        const ratio = Math.max(30, Math.min(85, (newEditorW / containerW) * 100));
+        editor.style.flex = `0 0 ${ratio}%`;
+        drawer.style.flex = `0 0 ${100 - ratio - 1}%`;
+      };
+
+      const onUp = () => {
+        container.classList.remove('resizing');
+        handle.classList.remove('active');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        // Persist
+        const containerW = container.getBoundingClientRect().width;
+        const ratio = (editor.getBoundingClientRect().width / containerW) * 100;
+        localStorage.setItem('v6_split_ratio', ratio.toFixed(1));
+      };
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
   }
 
   return {
