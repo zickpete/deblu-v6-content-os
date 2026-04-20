@@ -165,6 +165,13 @@
   position: relative;
   border-radius: 12px;
   border: 1px solid var(--color-border-subtle);
+  /* Resizable */
+  resize: vertical;
+  overflow: auto;
+}
+.cal-cell::-webkit-resizer {
+  background: linear-gradient(135deg, transparent 60%, rgba(166,140,255,0.3) 60%, rgba(166,140,255,0.3) 75%, transparent 75%, transparent 85%, rgba(166,140,255,0.3) 85%);
+  border-radius: 0 0 12px 0;
 }
 .cal-cell.other-month,
 .cal-cell.empty-slot {
@@ -354,6 +361,12 @@
   max-width: 100%;
   box-sizing: border-box;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  /* Resizable */
+  resize: vertical;
+  overflow: auto;
+}
+.kanban-col .content-card::-webkit-resizer {
+  background: linear-gradient(135deg, transparent 60%, rgba(166,140,255,0.25) 60%, rgba(166,140,255,0.25) 75%, transparent 75%, transparent 85%, rgba(166,140,255,0.25) 85%);
 }
 .kanban-col .card-topic {
   /* Full text visibility - no truncation */
