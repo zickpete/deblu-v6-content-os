@@ -554,8 +554,11 @@ window.V6Layer1 = (function () {
           ${card.special_tag ? `<div style="margin-top:5px;"><span class="card-special-tag ${tagClass(card.special_tag)}">${card.special_tag}</span></div>` : ''}
         </div>
       </div>
-      <div class="cdm-topic thai-text">${esc(displayTitle)}</div>
-      ${hasCustomTitle ? `<div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>` : ''}
+      <div class="form-group" style="margin-top:12px;margin-bottom:0;">
+        <label class="form-label" style="font-size:10px;">✏️ หัวข้อ / Title</label>
+        <input class="form-input cdm-topic-input" id="cardTitleInput" type="text" value="${esc(displayTitle)}" placeholder="พิมพ์หัวข้อที่ต้องการ..." style="font-size:15px; font-weight:800; padding:10px 14px;" />
+      </div>
+      ${hasCustomTitle || card.meta_headline ? `<div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>` : ''}
 
       ${card.meta_caption ? `
         <div style="margin-top:14px; padding:14px 16px; background:var(--color-surface-hover); border:1px solid var(--color-border-subtle); border-radius:12px;">
@@ -661,15 +664,22 @@ window.V6Layer1 = (function () {
 
   function updateCardStatus(cardId) {
     const sel = $('cardStatusSelect');
+    const titleInput = $('cardTitleInput');
     if (!sel || !state.strategy) return;
     const newStatus = sel.value;
+    const newTitle = titleInput ? titleInput.value.trim() : '';
 
     // Update in-memory
     const card = state.cards.find(c => c.id === cardId);
-    if (card) card.status = newStatus;
+    if (card) {
+      card.status = newStatus;
+      if (newTitle) card.meta_headline = newTitle;
+    }
 
-    // Persist
-    V6Store.updateCard(state.strategy.id, cardId, { status: newStatus });
+    // Persist — save both status and title
+    const updates = { status: newStatus };
+    if (newTitle) updates.meta_headline = newTitle;
+    V6Store.updateCard(state.strategy.id, cardId, updates);
 
     // Re-render both views to reflect change
     renderCalendarGrid(state.cards);
@@ -682,7 +692,7 @@ window.V6Layer1 = (function () {
     if (modal) modal.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
 
-    toast(`✅ Status อัปเดตเป็น ${newStatus}`, 'success');
+    toast(`✅ บันทึกแล้ว!`, 'success');
   }
 
   /* ─── DnD: Calendar ─── */
