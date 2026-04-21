@@ -235,6 +235,12 @@ window.V6i18n = (function () {
     'l1.modal.status':          { th: '📊 สถานะ',                en: '📊 Status' },
     'l1.modal.edit':            { th: '✏️ เขียนเนื้อหา/แก้ไข',     en: '✏️ Edit Content' },
     'l1.modal.mycontent':       { th: 'เนื้อหาที่เขียน',             en: 'My Content' },
+    'l1.modal.quickTitle':      { th: '✏️ หัวข้อ / Title',        en: '✏️ Title / Headline' },
+    'l1.modal.useAiIdea':       { th: '✨ ใช้ AI Idea',          en: '✨ Use AI Idea' },
+    'l1.modal.caption':         { th: '📝 Caption / เนื้อหา',     en: '📝 Caption / Content' },
+    'l1.modal.hashtags':        { th: '#️⃣ แฮชแท็ก',             en: '#️⃣ Hashtags' },
+    'l1.modal.statusGuide':     { th: '📖 คู่มือสถานะ (Status Guide)', en: '📖 Status Guide' },
+    'l1.toast.aiApplied':       { th: '✨ ใช้ AI Idea แล้ว',      en: '✨ AI Idea Applied' },
 
     /* ═══ LAYER 2 — FACTORY (Extra) ═══ */
     'l2.btn.save':              { th: '💾 บันทึก',               en: '💾 Save' },

@@ -556,21 +556,21 @@ window.V6Layer1 = (function () {
       </div>
       <div class="form-group" style="margin-top:12px;margin-bottom:0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-           <label class="form-label" style="font-size:10px; margin-bottom:0;">✏️ หัวข้อ / Title</label>
-           <button class="btn" style="padding:2px 6px; font-size:9px; height:auto; background:rgba(166,140,255,0.1); color:#a68cff; border:1px solid rgba(166,140,255,0.2);" onclick="document.getElementById('cardTitleInput').value='${esc(aiTopic)}'; V6Layer1.toast('✨ AI Idea Applied','info',1000)">✨ Use AI Idea</button>
+           <label class="form-label" style="font-size:10px; margin-bottom:0;">${V6i18n.t('l1.modal.quickTitle')}</label>
+           <button class="btn" style="padding:2px 6px; font-size:9px; height:auto; background:rgba(166,140,255,0.1); color:#a68cff; border:1px solid rgba(166,140,255,0.2);" onclick="document.getElementById('cardTitleInput').value='${esc(aiTopic)}'; V6Layer1.toast('${V6i18n.t('l1.toast.aiApplied')}','info',1000)">${V6i18n.t('l1.modal.useAiIdea')}</button>
         </div>
-        <input class="form-input cdm-topic-input" id="cardTitleInput" type="text" value="${esc(displayTitle)}" placeholder="พิมพ์หัวข้อที่ต้องการ..." style="font-size:15px; font-weight:800; padding:10px 14px;" />
+        <input class="form-input cdm-topic-input" id="cardTitleInput" type="text" value="${esc(displayTitle)}" placeholder="${V6i18n.t('l2.editor.headline.ph')}" style="font-size:15px; font-weight:800; padding:10px 14px;" />
       </div>
       <div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>
 
       <div class="form-group" style="margin-top:16px;">
-        <label class="form-label" style="font-size:10px;">📝 Caption / เนื้อหา</label>
-        <textarea class="form-input" id="cardCaptionInput" rows="4" placeholder="เขียนเนื้อหาที่นี่..." style="font-size:13px; line-height:1.6; resize:vertical; min-height:80px; padding:12px;">${esc(card.meta_caption || '')}</textarea>
+        <label class="form-label" style="font-size:10px;">${V6i18n.t('l1.modal.caption')}</label>
+        <textarea class="form-input" id="cardCaptionInput" rows="4" placeholder="${V6i18n.t('l2.editor.caption.ph')}" style="font-size:13px; line-height:1.6; resize:vertical; min-height:80px; padding:12px;">${esc(card.meta_caption || '')}</textarea>
       </div>
 
       <div class="form-group" style="margin-top:12px;">
-        <label class="form-label" style="font-size:10px;">#️⃣ Hashtags</label>
-        <input class="form-input" id="cardHashtagsInput" type="text" value="${esc(card.meta_hashtags || '')}" placeholder="#hashtag1 #hashtag2" style="font-size:12px; color:#3b82f6; font-weight:600;" />
+        <label class="form-label" style="font-size:10px;">${V6i18n.t('l1.modal.hashtags')}</label>
+        <input class="form-input" id="cardHashtagsInput" type="text" value="${esc(card.meta_hashtags || '')}" placeholder="${V6i18n.t('l2.hashtags.placeholder')}" style="font-size:12px; color:#3b82f6; font-weight:600;" />
       </div>
 
       <div class="form-group" style="margin-top:20px;">
@@ -582,13 +582,16 @@ window.V6Layer1 = (function () {
       </div>
 
       <div id="statusGuideBox" style="display:none; margin-top:10px; padding:12px; background:var(--color-surface-hover); border:1px solid var(--color-border-subtle); border-radius:12px; font-size:11px;">
-        <div style="font-weight:800; margin-bottom:8px; color:var(--color-text-main); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">📖 คู่มือสถานะ (Status Guide)</div>
-        ${V6_CONFIG.kanbanStatuses.map(s => `
-          <div style="display:flex; gap:10px; margin-bottom:6px;">
-            <span style="min-width:110px; font-weight:800; color:${s.color};">${s.label}</span>
-            <span style="color:var(--color-text-subtle); line-height:1.4;">${s.desc}</span>
-          </div>
-        `).join('')}
+        <div style="font-weight:800; margin-bottom:8px; color:var(--color-text-main); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">${V6i18n.t('l1.modal.statusGuide')}</div>
+        ${V6_CONFIG.kanbanStatuses.map(s => {
+          const statusDesc = (typeof s.desc === 'object') ? (s.desc[lang] || s.desc['en']) : s.desc;
+          return `
+            <div style="display:flex; gap:10px; margin-bottom:6px;">
+              <span style="min-width:110px; font-weight:800; color:${s.color};">${s.label}</span>
+              <span style="color:var(--color-text-subtle); line-height:1.4;">${statusDesc}</span>
+            </div>
+          `;
+        }).join('')}
       </div>
 
       <div class="cdm-actions">
@@ -727,7 +730,7 @@ window.V6Layer1 = (function () {
     if (modal) modal.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
 
-    toast(`✅ บันทึกแล้ว!`, 'success');
+    toast(V6i18n.t('common.saved'), 'success');
   }
 
   /* ─── DnD: Calendar ─── */
