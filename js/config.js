@@ -39,11 +39,11 @@ window.V6_CONFIG = {
 
   /* ─── Kanban Statuses (Layer 1) ─── */
   kanbanStatuses: [
-    { id: 'Idea',      label: '💡 Idea',       color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
-    { id: 'Drafting',  label: '✏️ Drafting',   color: '#a68cff', bg: 'rgba(166,140,255,0.12)' },
-    { id: 'Graphic',   label: '🎨 Graphic',    color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
-    { id: 'Review',    label: '🔍 Review',     color: '#81ecff', bg: 'rgba(129,236,255,0.12)' },
-    { id: 'Scheduled', label: '✅ Scheduled', color: '#4ade80', bg: 'rgba(74,222,128,0.12)'  },
+    { id: 'Idea',      label: '💡 Idea & Plan',    color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
+    { id: 'Drafting',  label: '✍️ Drafting Copy',  color: '#a68cff', bg: 'rgba(166,140,255,0.12)' },
+    { id: 'Graphic',   label: '🎨 Design & Media', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
+    { id: 'Review',    label: '🔍 Final QC',       color: '#06b6d4', bg: 'rgba(6,182,212,0.12)'  },
+    { id: 'Scheduled', label: '✅ Ready & Done',   color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
   ],
 
   /* ─── Special Day Rules (Layer 1 Scheduler) ─── */
