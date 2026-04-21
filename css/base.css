@@ -956,6 +956,12 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
 .auth-btn-label {
   letter-spacing: 0.03em;
 }
+/* ─── Header Action Buttons ─── */
+.btn-header {
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
 /* ─── Mobile Responsiveness (Overhaul) ─── */
 @media (max-width: 768px) {
   body {
@@ -1008,6 +1014,14 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
   }
 
   /* AI badge: shrink to fit */
+
+  /* Header buttons: compact on mobile */
+  .btn-header {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  
   .ai-status-badge {
     font-size: 9px;
     padding: 5px 10px;
