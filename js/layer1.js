@@ -555,21 +555,23 @@ window.V6Layer1 = (function () {
         </div>
       </div>
       <div class="form-group" style="margin-top:12px;margin-bottom:0;">
-        <label class="form-label" style="font-size:10px;">✏️ หัวข้อ / Title</label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+           <label class="form-label" style="font-size:10px; margin-bottom:0;">✏️ หัวข้อ / Title</label>
+           <button class="btn" style="padding:2px 6px; font-size:9px; height:auto; background:rgba(166,140,255,0.1); color:#a68cff; border:1px solid rgba(166,140,255,0.2);" onclick="document.getElementById('cardTitleInput').value='${esc(aiTopic)}'; V6Layer1.toast('✨ AI Idea Applied','info',1000)">✨ Use AI Idea</button>
+        </div>
         <input class="form-input cdm-topic-input" id="cardTitleInput" type="text" value="${esc(displayTitle)}" placeholder="พิมพ์หัวข้อที่ต้องการ..." style="font-size:15px; font-weight:800; padding:10px 14px;" />
       </div>
-      ${hasCustomTitle || card.meta_headline ? `<div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>` : ''}
+      <div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>
 
-      ${card.meta_caption ? `
-        <div style="margin-top:14px; padding:14px 16px; background:var(--color-surface-hover); border:1px solid var(--color-border-subtle); border-radius:12px;">
-          <div style="font-size:10px; font-weight:800; color:var(--color-text-subtle); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">📝 Caption / เนื้อหา</div>
-          <div style="font-size:13px; color:var(--color-text-body); white-space:pre-wrap; line-height:1.7;">${esc(card.meta_caption)}</div>
-        </div>
-      ` : ''}
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label" style="font-size:10px;">📝 Caption / เนื้อหา</label>
+        <textarea class="form-input" id="cardCaptionInput" rows="4" placeholder="เขียนเนื้อหาที่นี่..." style="font-size:13px; line-height:1.6; resize:vertical; min-height:80px; padding:12px;">${esc(card.meta_caption || '')}</textarea>
+      </div>
 
-      ${card.meta_hashtags ? `
-        <div style="margin-top:10px; font-size:12px; color:#3b82f6; font-weight:600;">${esc(card.meta_hashtags)}</div>
-      ` : ''}
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label" style="font-size:10px;">#️⃣ Hashtags</label>
+        <input class="form-input" id="cardHashtagsInput" type="text" value="${esc(card.meta_hashtags || '')}" placeholder="#hashtag1 #hashtag2" style="font-size:12px; color:#3b82f6; font-weight:600;" />
+      </div>
 
       <div class="form-group" style="margin-top:20px;">
         <label class="form-label">${V6i18n.t('l1.modal.status')}</label>
@@ -665,20 +667,32 @@ window.V6Layer1 = (function () {
   function updateCardStatus(cardId) {
     const sel = $('cardStatusSelect');
     const titleInput = $('cardTitleInput');
+    const captionInput = $('cardCaptionInput');
+    const hashtagsInput = $('cardHashtagsInput');
+    
     if (!sel || !state.strategy) return;
+    
     const newStatus = sel.value;
     const newTitle = titleInput ? titleInput.value.trim() : '';
+    const newCaption = captionInput ? captionInput.value.trim() : '';
+    const newHashtags = hashtagsInput ? hashtagsInput.value.trim() : '';
 
     // Update in-memory
     const card = state.cards.find(c => c.id === cardId);
     if (card) {
       card.status = newStatus;
-      if (newTitle) card.meta_headline = newTitle;
+      card.meta_headline = newTitle;
+      card.meta_caption = newCaption;
+      card.meta_hashtags = newHashtags;
     }
 
-    // Persist — save both status and title
-    const updates = { status: newStatus };
-    if (newTitle) updates.meta_headline = newTitle;
+    // Persist — save all fields
+    const updates = { 
+      status: newStatus,
+      meta_headline: newTitle,
+      meta_caption: newCaption,
+      meta_hashtags: newHashtags
+    };
     V6Store.updateCard(state.strategy.id, cardId, updates);
 
     // Re-render both views to reflect change
