@@ -962,31 +962,67 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
     overflow-x: hidden;
   }
 
+  /* ── Header: Stack vertically, constrain to viewport ── */
   .app-header {
     height: auto;
-    padding: 12px;
+    padding: 12px 16px;
     flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .header-nav {
-    flex-wrap: wrap; /* Let buttons wrap into rows */
-    justify-content: center;
-    gap: 6px;
+    align-items: center;
+    gap: 10px;
     width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
-  .header-nav .btn {
-    flex: 1 1 auto;
-    min-width: 80px;
-    padding: 8px 12px;
-    font-size: 12px;
+  /* Hide layer nav pills on mobile — global rule */
+  .layer-nav {
+    display: none !important;
+  }
+
+  /* Breadcrumb: allow wrapping, shrink font */
+  .header-breadcrumb {
+    font-size: 11px;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Header actions: wrap into a compact grid */
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+  }
+
+  .header-actions .btn {
+    padding: 7px 10px;
+    font-size: 10px;
+    min-width: 0;
+    flex: 0 1 auto;
+    white-space: nowrap;
+  }
+
+  /* AI badge: shrink to fit */
+  .ai-status-badge {
+    font-size: 9px;
+    padding: 5px 10px;
+  }
+
+  .toast {
+    bottom: 16px;
+    width: 90%;
+    text-align: center;
+    white-space: normal;
   }
 
   /* Force vertical list on mobile for Calendar */
   .cal-header-row {
-    display: none; /* Hide M T W T F S S on mobile */
+    display: none;
   }
 
   .cal-grid, .cal-skeleton {
@@ -1024,6 +1060,16 @@ body.modal-active > *:not(#apiKeyModal):not(#dbModal):not(#modalOverlay):not(.to
   /* Prevent any item from pushing width */
   * {
     max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Settings / DB modal: full-width on mobile */
+  #apiKeyModal,
+  #dbModal {
+    width: calc(100vw - 32px) !important;
+    max-width: 100% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
   }
 }
 

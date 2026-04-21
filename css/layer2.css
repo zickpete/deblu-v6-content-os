@@ -449,3 +449,40 @@
   .split-resize-handle { display: none; }
   .l2-main { height: auto; }
 }
+
+@media (max-width: 768px) {
+  .l2-main {
+    padding: 16px;
+  }
+
+  .card-info-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .cib-left {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .cib-actions {
+    justify-content: flex-end;
+  }
+
+  .editor-pane {
+    padding: 24px 20px;
+  }
+
+  .editor-headline {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .editor-meta-group {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
