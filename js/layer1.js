@@ -276,7 +276,9 @@ window.V6Layer1 = (function () {
     `).join('');
 
     const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
-    const displayTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || V6i18n.t('l2.loading.topic');
+    // Title Override: prefer user's custom title from Layer 2, fallback to AI idea
+    const aiTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || V6i18n.t('l2.loading.topic');
+    const displayTopic = card.meta_headline ? card.meta_headline : aiTopic;
     const displayTrack = card.track_name || 'Special';
 
     // Translate status for display
@@ -536,7 +538,10 @@ window.V6Layer1 = (function () {
     ).join('');
 
     const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
-    const displayTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || '—';
+    // Title Override: prefer user's custom title from Layer 2
+    const aiTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || '—';
+    const displayTitle = card.meta_headline ? card.meta_headline : aiTopic;
+    const hasCustomTitle = !!card.meta_headline;
 
     modal.innerHTML = `
       <div class="modal-title">
@@ -549,15 +554,18 @@ window.V6Layer1 = (function () {
           ${card.special_tag ? `<div style="margin-top:5px;"><span class="card-special-tag ${tagClass(card.special_tag)}">${card.special_tag}</span></div>` : ''}
         </div>
       </div>
-      <div class="cdm-topic thai-text">${esc(displayTopic)}</div>
+      <div class="cdm-topic thai-text">${esc(displayTitle)}</div>
+      ${hasCustomTitle ? `<div style="font-size:11px; color:var(--color-text-subtle); margin-top:4px; font-style:italic;">💡 AI Idea: ${esc(aiTopic)}</div>` : ''}
 
-      ${(card.meta_headline || card.meta_caption || card.meta_hashtags) ? `
-        <div style="margin-top:16px; padding:16px; background:var(--color-surface-glass); border:1px solid var(--color-border-subtle); border-radius:16px;">
-          <div style="font-size:11px; font-weight:800; color:var(--color-text-subtle); margin-bottom:12px; text-transform:uppercase;">📝 ${V6i18n.t('l1.modal.mycontent') || 'My Content / เนื้อหาที่เขียน'}</div>
-          ${card.meta_headline ? `<div style="font-weight:800; margin-bottom:8px; color:var(--color-text-main); font-size:15px; line-height:1.4;">${esc(card.meta_headline)}</div>` : ''}
-          ${card.meta_caption ? `<div style="font-size:13.5px; color:var(--color-text-subtle); white-space:pre-wrap; margin-bottom:10px; line-height:1.6;">${esc(card.meta_caption)}</div>` : ''}
-          ${card.meta_hashtags ? `<div style="font-size:12px; color:#3b82f6; font-weight:600;">${esc(card.meta_hashtags)}</div>` : ''}
+      ${card.meta_caption ? `
+        <div style="margin-top:14px; padding:14px 16px; background:var(--color-surface-hover); border:1px solid var(--color-border-subtle); border-radius:12px;">
+          <div style="font-size:10px; font-weight:800; color:var(--color-text-subtle); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">📝 Caption / เนื้อหา</div>
+          <div style="font-size:13px; color:var(--color-text-body); white-space:pre-wrap; line-height:1.7;">${esc(card.meta_caption)}</div>
         </div>
+      ` : ''}
+
+      ${card.meta_hashtags ? `
+        <div style="margin-top:10px; font-size:12px; color:#3b82f6; font-weight:600;">${esc(card.meta_hashtags)}</div>
       ` : ''}
 
       <div class="form-group" style="margin-top:20px;">
