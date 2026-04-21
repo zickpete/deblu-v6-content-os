@@ -574,8 +574,21 @@ window.V6Layer1 = (function () {
       </div>
 
       <div class="form-group" style="margin-top:20px;">
-        <label class="form-label">${V6i18n.t('l1.modal.status')}</label>
-        <select class="cdm-status-select" id="cardStatusSelect">${opts}</select>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <label class="form-label" style="margin-bottom:0;">${V6i18n.t('l1.modal.status')}</label>
+          <button class="btn" style="width:20px; height:20px; padding:0; border-radius:50%; font-size:11px; background:var(--color-surface-hover); color:var(--color-text-subtle); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--color-border-subtle);" onclick="V6Layer1.toggleStatusGuide()" title="ดูความหมายของสถานะ">?</button>
+        </div>
+        <select class="cdm-status-select" id="cardStatusSelect" style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-surface-main); color:var(--color-text-main); font-weight:600;">${opts}</select>
+      </div>
+
+      <div id="statusGuideBox" style="display:none; margin-top:10px; padding:12px; background:var(--color-surface-hover); border:1px solid var(--color-border-subtle); border-radius:12px; font-size:11px;">
+        <div style="font-weight:800; margin-bottom:8px; color:var(--color-text-main); font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">📖 คู่มือสถานะ (Status Guide)</div>
+        ${V6_CONFIG.kanbanStatuses.map(s => `
+          <div style="display:flex; gap:10px; margin-bottom:6px;">
+            <span style="min-width:110px; font-weight:800; color:${s.color};">${s.label}</span>
+            <span style="color:var(--color-text-subtle); line-height:1.4;">${s.desc}</span>
+          </div>
+        `).join('')}
       </div>
 
       <div class="cdm-actions">
@@ -662,6 +675,14 @@ window.V6Layer1 = (function () {
     const overlay = $('cardDetailOverlay');
     if (modal) modal.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
+  }
+  
+  function toggleStatusGuide() {
+    const box = $('statusGuideBox');
+    if (box) {
+      const isOpen = box.style.display === 'block';
+      box.style.display = isOpen ? 'none' : 'block';
+    }
   }
 
   function updateCardStatus(cardId) {
@@ -891,6 +912,7 @@ window.V6Layer1 = (function () {
     switchView,
     openCardDetail,
     closeCardDetail,
+    toggleStatusGuide,
     updateCardStatus,
     toast,
   };

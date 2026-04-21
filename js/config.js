@@ -39,11 +39,11 @@ window.V6_CONFIG = {
 
   /* ─── Kanban Statuses (Layer 1) ─── */
   kanbanStatuses: [
-    { id: 'Idea',      label: '💡 Idea & Plan',    color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
-    { id: 'Drafting',  label: '✍️ Drafting Copy',  color: '#a68cff', bg: 'rgba(166,140,255,0.12)' },
-    { id: 'Graphic',   label: '🎨 Design & Media', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
-    { id: 'Review',    label: '🔍 Final QC',       color: '#06b6d4', bg: 'rgba(6,182,212,0.12)'  },
-    { id: 'Scheduled', label: '✅ Ready & Done',   color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+    { id: 'Idea',      label: '💡 Idea & Plan',    color: '#64748b', bg: 'rgba(100,116,139,0.12)', desc: 'ช่วงวางแผน/ปั้นไอเดีย ยังไม่เริ่มผลิตเนื้อหา' },
+    { id: 'Drafting',  label: '✍️ Drafting Copy',  color: '#a68cff', bg: 'rgba(166,140,255,0.12)', desc: 'กำลังเขียนแคปชั่นและเนื้อหาหลักใน Layer 2' },
+    { id: 'Graphic',   label: '🎨 Design & Media', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', desc: 'ส่งต่อให้ทีมกราฟิกทำรูปภาพหรือตัดต่อวิดีโอ' },
+    { id: 'Review',    label: '🔍 Final QC',       color: '#06b6d4', bg: 'rgba(6,182,212,0.12)', desc: 'ทำเสร็จหมดแล้ว รอตรวจความเรียบร้อยครั้งสุดท้าย' },
+    { id: 'Scheduled', label: '✅ Ready & Done',   color: '#10b981', bg: 'rgba(16,185,129,0.12)', desc: 'อนุมัติเรียบร้อย พร้อมโพสต์หรือตั้งเวลาแล้ว' },
   ],
 
   /* ─── Special Day Rules (Layer 1 Scheduler) ─── */
