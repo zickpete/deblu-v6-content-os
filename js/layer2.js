@@ -258,6 +258,7 @@ window.V6Layer2 = (function () {
 
       suggEl.innerHTML = lines.slice(0, 3).map(s => `<div class="magic-suggestion"><span>👉</span><span>${s}</span></div>`).join('');
       overlay.classList.add('show');
+      document.body.classList.add('modal-active'); // Add background blur
       toast(V6i18n.t('l2.magic.done'), 'success');
     } catch (err) {
       if (err.message === 'KEY_MISSING') {
@@ -280,6 +281,7 @@ window.V6Layer2 = (function () {
 
   function closeMagicOverlay() {
     $('magicOverlay').classList.remove('show');
+    document.body.classList.remove('modal-active'); // Remove background blur
   }
 
   /* ─── Drawer Tools Rendering ─── */

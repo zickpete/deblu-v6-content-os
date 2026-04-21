@@ -624,7 +624,12 @@ window.V6Layer1 = (function () {
 
     // Show both modal and overlay
     modal.classList.add('open');
-    if (overlay) overlay.classList.add('open');
+    if (overlay) {
+      overlay.classList.add('open');
+      // Fix: Close when clicking overlay backdrop
+      overlay.onclick = closeCardDetail;
+    }
+    document.body.classList.add('modal-active'); // Add background blur
 
     // Bind resize handle
     bindModalResize(modal);
@@ -678,6 +683,7 @@ window.V6Layer1 = (function () {
     const overlay = $('cardDetailOverlay');
     if (modal) modal.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
+    document.body.classList.remove('modal-active'); // Remove background blur
   }
   
   function toggleStatusGuide() {

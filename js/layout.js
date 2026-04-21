@@ -512,10 +512,18 @@ function initGlobalApiKeyModal() {
       if(modal) modal.classList.remove('open');
       if(overlay) overlay.classList.remove('open');
       if(dbModal) dbModal.style.display = 'none';
-      document.body.classList.remove('modal-active'); // Remove background blur
       
+      // Layer 1: Card Detail Modal
       const detailModal = document.getElementById('cardDetailModal');
+      const detailOverlay = document.getElementById('cardDetailOverlay');
       if(detailModal) detailModal.classList.remove('open');
+      if(detailOverlay) detailOverlay.classList.remove('open');
+
+      // Layer 2: Magic Analysis Overlay
+      const magicOverlay = document.getElementById('magicOverlay');
+      if(magicOverlay) magicOverlay.classList.remove('show');
+
+      document.body.classList.remove('modal-active'); // Remove background blur
       closePopovers();
     }
 
