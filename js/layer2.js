@@ -379,7 +379,7 @@ window.V6Layer2 = (function () {
         }
       }
     } finally {
-      btn.innerHTML = `✨ ${V6i18n.t('l2.magic.btn')}`;
+      btn.innerHTML = V6i18n.t('l2.magic.btn');
       btn.disabled = false;
     }
   }
