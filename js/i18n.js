@@ -360,11 +360,11 @@ window.V6i18n = (function () {
     'l2.tool.45':               { th: '🎬 สตอรี่บอร์ดวิดีโอสั้น (Short Video Storyboard)', en: '🎬 Short Video Storyboard' },
 
     /* ═══ LAYER 2 — PERFORMANCE TRACKING ═══ */
-    'l2.perf.title':            { th: '📈 ติดตามประสิทธิภาพ',      en: '📈 Performance Tracking' },
-    'l2.perf.platform':         { th: 'แพลตฟอร์ม',                en: 'Platform' },
-    'l2.perf.views':            { th: 'ยอดเข้าชม (Views)',         en: 'Views' },
-    'l2.perf.sales':            { th: 'ยอดขาย/Conversions',       en: 'Sales/Conversions' },
-    'l2.perf.rating':           { th: 'คะแนน (1‑5)',               en: 'Rating (1‑5)' },
+    'l2.perf.title':            { th: 'หัวข้อ (Title)',           en: 'Title' },
+    'l2.perf.platform':         { th: 'แพลตฟอร์ม (Platform)',     en: 'Platform' },
+    'l2.perf.views':            { th: 'ยอดวิว (Views)',           en: 'Views' },
+    'l2.perf.sales':            { th: 'ยอดขาย (Conversions)',     en: 'Conversions' },
+    'l2.perf.rating':           { th: 'เรตติ้ง (Rating)',         en: 'Rating' },
 
     /* ═══ LAYER 3 — ANALYTICS DASHBOARD ═══ */
     'header.layer3':            { th: '📊 Layer 3',                en: '📊 Layer 3' },
@@ -405,11 +405,11 @@ window.V6i18n = (function () {
   /** Get current language */
   function getLang() { return currentLang; }
 
-  /** Translate a key — returns the localized string or the key itself if missing */
+  /** Translate a key — returns the localized string or null if missing to prevent printing raw keys */
   function t(key) {
     const entry = dict[key];
-    if (!entry) return key;
-    return entry[currentLang] || entry['en'] || key;
+    if (!entry) return null;
+    return entry[currentLang] || entry['en'] || null;
   }
 
   /** Set language and re-apply to DOM */
@@ -440,25 +440,37 @@ window.V6i18n = (function () {
     // Text content
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
-      if (key) el.textContent = t(key);
+      if (key) {
+        const tr = t(key);
+        if (tr !== null) el.textContent = tr;
+      }
     });
 
     // Placeholder
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
-      if (key) el.placeholder = t(key);
+      if (key) {
+        const tr = t(key);
+        if (tr !== null) el.placeholder = tr;
+      }
     });
 
     // Title
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
       const key = el.getAttribute('data-i18n-title');
-      if (key) el.title = t(key);
+      if (key) {
+        const tr = t(key);
+        if (tr !== null) el.title = tr;
+      }
     });
 
     // innerHTML (for elements containing mixed HTML + text)
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
       const key = el.getAttribute('data-i18n-html');
-      if (key) el.innerHTML = t(key);
+      if (key) {
+        const tr = t(key);
+        if (tr !== null) el.innerHTML = tr;
+      }
     });
 
     // Update html lang attribute
@@ -484,10 +496,12 @@ window.V6i18n = (function () {
       const key = el.getAttribute('data-i18n');
       if (key) {
         const translated = t(key);
-        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-          el.placeholder = translated;
-        } else {
-          el.textContent = translated;
+        if (translated !== null) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = translated;
+          } else {
+            el.textContent = translated;
+          }
         }
       }
     });
@@ -496,7 +510,10 @@ window.V6i18n = (function () {
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
       if (key) {
-        el.placeholder = t(key);
+        const translated = t(key);
+        if (translated !== null) {
+          el.placeholder = translated;
+        }
       }
     });
   }
