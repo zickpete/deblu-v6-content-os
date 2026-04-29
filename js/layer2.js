@@ -200,22 +200,30 @@ window.V6Layer2 = (function () {
     div.innerHTML = `
       <button type="button" class="perf-remove-btn" title="Remove" style="position:absolute; top:8px; right:8px; background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px;">×</button>
       
-      <label data-i18n="l2.perf.platform">แพลตฟอร์ม (Platform)</label>
-      <select class="form-select perf-platform">
-        <option value="Facebook" ${platform === 'Facebook' ? 'selected' : ''}>Facebook</option>
-        <option value="TikTok" ${platform === 'TikTok' ? 'selected' : ''}>TikTok</option>
-        <option value="Instagram" ${platform === 'Instagram' ? 'selected' : ''}>Instagram</option>
-        <option value="Other" ${platform === 'Other' ? 'selected' : ''}>Other</option>
-      </select>
+      <div style="margin-bottom: 8px;">
+        <label data-i18n="l2.perf.platform">แพลตฟอร์ม (Platform)</label>
+        <select class="form-select perf-platform">
+          <option value="Facebook" ${platform === 'Facebook' ? 'selected' : ''}>Facebook</option>
+          <option value="TikTok" ${platform === 'TikTok' ? 'selected' : ''}>TikTok</option>
+          <option value="Instagram" ${platform === 'Instagram' ? 'selected' : ''}>Instagram</option>
+          <option value="Other" ${platform === 'Other' ? 'selected' : ''}>Other</option>
+        </select>
+      </div>
       
-      <label data-i18n="l2.perf.views">ยอดวิว (Views)</label>
-      <input type="number" class="form-input perf-views" min="0" placeholder="0" value="${views}" />
+      <div style="margin-bottom: 8px;">
+        <label data-i18n="l2.perf.views">ยอดวิว (Views)</label>
+        <input type="number" class="form-input perf-views" min="0" placeholder="0" value="${views}" />
+      </div>
       
-      <label data-i18n="l2.perf.sales">ยอดขาย (Conversions)</label>
-      <input type="number" class="form-input perf-conversions" min="0" placeholder="0" value="${conversions}" />
+      <div style="margin-bottom: 8px;">
+        <label data-i18n="l2.perf.sales">ยอดขาย (Conversions)</label>
+        <input type="number" class="form-input perf-conversions" min="0" placeholder="0" value="${conversions}" />
+      </div>
       
-      <label data-i18n="l2.perf.rating">เรตติ้ง (Rating)</label>
-      <input type="number" class="form-input perf-rating" min="1" max="5" placeholder="5" value="${rating}" />
+      <div style="margin-bottom: 8px;">
+        <label data-i18n="l2.perf.rating">เรตติ้ง (Rating)</label>
+        <input type="number" class="form-input perf-rating" min="1" max="5" placeholder="5" value="${rating}" />
+      </div>
     `;
 
     const removeBtn = div.querySelector('.perf-remove-btn');
@@ -718,6 +726,7 @@ window.V6Layer2 = (function () {
         addPerformanceRow();
         saveContent();
       });
+      $('perfSaveBtn')?.addEventListener('click', () => saveContent());
     } else {
       // Partially disable UI for blank draft
       if ($('magicAnalysisBtn')) {

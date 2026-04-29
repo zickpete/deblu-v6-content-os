@@ -111,8 +111,8 @@
           </div>
           
           <!-- Performance Tracking Section -->
-        <div class="performance-section" style="margin-top:24px;">
-          <h3 data-i18n="l2.perf.title">หัวข้อ (Title)</h3>
+        <div class="performance-section" style="margin-top:24px; padding-bottom: 80px;">
+          <h3 data-i18n="l2.perf.title" style="margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">ข้อมูล (Performance) <span style="font-size: 10px; font-weight: normal; color: rgba(255,255,255,0.5);">(Auto-save)</span></h3>
           
           <div id="perfContainer">
             <!-- Dynamic rows will be inserted here by JS -->
@@ -120,6 +120,10 @@
 
           <button id="addPerfPlatformBtn" type="button" class="btn-outline" style="width: 100%; margin-top: 12px; border: 1px dashed rgba(255,255,255,0.2); padding: 8px;" data-i18n="l2.perf.add">
             + เพิ่มข้อมูลแพลตฟอร์ม (Add Platform)
+          </button>
+          
+          <button id="perfSaveBtn" type="button" class="btn-primary" style="width: 100%; margin-top: 8px; padding: 8px; background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.5);">
+            💾 บันทึกข้อมูล (Save)
           </button>
         </div>
         <!-- Magic Analysis Trigger (Sticky bottom of Editor) -->
