@@ -508,24 +508,31 @@ function initGlobalApiKeyModal() {
       if(keyInput) setTimeout(() => keyInput.focus(), 100);
     }
 
-    function closeAll() {
-      if(modal) modal.classList.remove('open');
-      if(overlay) overlay.classList.remove('open');
-      if(dbModal) dbModal.style.display = 'none';
-      
-      // Layer 1: Card Detail Modal
-      const detailModal = document.getElementById('cardDetailModal');
-      const detailOverlay = document.getElementById('cardDetailOverlay');
-      if(detailModal) detailModal.classList.remove('open');
-      if(detailOverlay) detailOverlay.classList.remove('open');
+function closeAll() {
+  if(modal) modal.classList.remove('open');
+  if(overlay) {
+    overlay.classList.remove('open', 'flex');
+    overlay.classList.add('hidden');
+  }
+  if(dbModal) dbModal.style.display = 'none';
 
-      // Layer 2: Magic Analysis Overlay
-      const magicOverlay = document.getElementById('magicOverlay');
-      if(magicOverlay) magicOverlay.classList.remove('show');
+  // Layer 1: Card Detail Modal
+  const detailModal = document.getElementById('cardDetailModal');
+  const detailOverlay = document.getElementById('cardDetailOverlay');
+  if(detailModal) detailModal.classList.remove('open');
+  if(detailOverlay) detailOverlay.classList.remove('open');
 
-      document.body.classList.remove('modal-active'); // Remove background blur
-      closePopovers();
-    }
+  // Layer 2: Magic Analysis Overlay
+  const magicOverlay = document.getElementById('magicOverlay');
+  if(magicOverlay) magicOverlay.classList.remove('show');
+
+  // Settings Modal overlay
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  if(settingsOverlay) settingsOverlay.classList.replace('flex', 'hidden');
+
+  document.body.classList.remove('modal-active'); // Remove background blur
+  closePopovers();
+}
 
     // --- Popover Logic ---
     function closePopovers() {
