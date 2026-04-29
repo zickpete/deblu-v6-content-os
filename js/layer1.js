@@ -974,3 +974,9 @@ window.V6Layer1 = (function () {
 
 // Bootstrap
 document.addEventListener('DOMContentLoaded', V6Layer1.init);
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    console.log('[Layer1] Restored from BFCache. Re-initializing...');
+    V6Layer1.init();
+  }
+});
