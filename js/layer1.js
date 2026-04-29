@@ -593,6 +593,40 @@ window.V6Layer1 = (function () {
           `;
         }).join('')}
       </div>
+      
+      ${(() => {
+        let statsArray = card.performanceStats || [];
+        if (!statsArray.length && card.performance && (card.performance.views || card.performance.conversions)) {
+          statsArray = [card.performance]; // Backward compat
+        }
+        if (!statsArray.length) return '';
+        
+        const rows = statsArray.map(stat => {
+          const p = stat.platform || 'Facebook';
+          const v = Number(stat.views || 0);
+          const c = Number(stat.conversions || 0);
+          const r = stat.rating || '-';
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px; background:rgba(0,0,0,0.15); border-radius:6px; margin-bottom:4px; font-size:12px;">
+              <span style="font-weight:800; color:var(--accent-cyan);">${p}</span>
+              <div style="display:flex; gap:12px; color:var(--color-text-subtle);">
+                <span title="Views">👁️ ${v.toLocaleString()}</span>
+                <span title="Conversions">🛒 ${c.toLocaleString()}</span>
+                <span title="Rating" style="color:#fbbf24;">⭐ ${r}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="form-group" style="margin-top:20px;">
+            <label class="form-label" style="font-size:10px;">📈 ประสิทธิภาพ (Performance Summary)</label>
+            <div style="background:var(--color-surface-hover); padding:10px; border-radius:10px; border:1px solid rgba(129,236,255,0.2);">
+              ${rows}
+            </div>
+          </div>
+        `;
+      })()}
 
       <div class="cdm-actions">
         <button class="btn btn-primary" style="flex:1;" onclick="V6Layer1.updateCardStatus('${card.id}')">${V6i18n.t('common.save')}</button>
