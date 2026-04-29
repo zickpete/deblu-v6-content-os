@@ -133,12 +133,11 @@ window.V6Layer2 = (function () {
     $('cibTrackBadge').style.color = '#e2e8f0';
 
     // Performance Tracking fields
-    if (card.performance) {
-      $('perfPlatform').value = card.performance.platform || 'Facebook';
-      $('perfViews').value = card.performance.views || '';
-      $('perfConversions').value = card.performance.conversions || '';
-      $('perfRating').value = card.performance.rating || '';
+    let stats = card.performanceStats || [];
+    if (stats.length === 0 && card.performance && card.performance.platform) {
+      stats = [card.performance]; // Migration
     }
+    renderPerformanceRows(stats);
 
     const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
     const displayTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || 'No topic';
@@ -171,6 +170,66 @@ window.V6Layer2 = (function () {
 
     // Auto-resize caption initially
     autoResize($('editorCaption'));
+  }
+
+  function renderPerformanceRows(stats) {
+    const container = $('perfContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    stats.forEach(stat => addPerformanceRow(stat));
+  }
+
+  function addPerformanceRow(stat = null) {
+    const container = $('perfContainer');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'perf-row';
+    div.style.position = 'relative';
+    div.style.marginBottom = '16px';
+    div.style.padding = '12px';
+    div.style.background = 'rgba(255,255,255,0.03)';
+    div.style.borderRadius = '8px';
+    div.style.border = '1px solid rgba(255,255,255,0.05)';
+
+    const platform = stat ? stat.platform : 'Facebook';
+    const views = stat ? (stat.views || '') : '';
+    const conversions = stat ? (stat.conversions || '') : '';
+    const rating = stat ? (stat.rating || '') : '';
+
+    div.innerHTML = `
+      <button type="button" class="perf-remove-btn" title="Remove" style="position:absolute; top:8px; right:8px; background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px;">×</button>
+      
+      <label data-i18n="l2.perf.platform">แพลตฟอร์ม (Platform)</label>
+      <select class="form-select perf-platform">
+        <option value="Facebook" ${platform === 'Facebook' ? 'selected' : ''}>Facebook</option>
+        <option value="TikTok" ${platform === 'TikTok' ? 'selected' : ''}>TikTok</option>
+        <option value="Instagram" ${platform === 'Instagram' ? 'selected' : ''}>Instagram</option>
+        <option value="Other" ${platform === 'Other' ? 'selected' : ''}>Other</option>
+      </select>
+      
+      <label data-i18n="l2.perf.views">ยอดวิว (Views)</label>
+      <input type="number" class="form-input perf-views" min="0" placeholder="0" value="${views}" />
+      
+      <label data-i18n="l2.perf.sales">ยอดขาย (Conversions)</label>
+      <input type="number" class="form-input perf-conversions" min="0" placeholder="0" value="${conversions}" />
+      
+      <label data-i18n="l2.perf.rating">เรตติ้ง (Rating)</label>
+      <input type="number" class="form-input perf-rating" min="1" max="5" placeholder="5" value="${rating}" />
+    `;
+
+    const removeBtn = div.querySelector('.perf-remove-btn');
+    removeBtn.addEventListener('click', () => {
+      div.remove();
+      saveContent();
+    });
+
+    div.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', () => handleInput('performance'));
+    });
+
+    container.appendChild(div);
+    if (window.V6i18n) V6i18n.applyLang();
   }
 
   function autoResize(textarea) {
@@ -207,17 +266,24 @@ window.V6Layer2 = (function () {
     }
 
     // Performance Tracking data
-    const perfPlatform = $('perfPlatform');
-    const perfViews = $('perfViews');
-    const perfConversions = $('perfConversions');
-    const perfRating = $('perfRating');
-    if (perfPlatform) {
-      updates.performance = {
-        platform: perfPlatform.value || 'Facebook',
-        views: parseInt(perfViews.value) || 0,
-        conversions: parseInt(perfConversions.value) || 0,
-        rating: parseInt(perfRating.value) || 0,
-      };
+    const perfContainer = $('perfContainer');
+    if (perfContainer) {
+      const rows = perfContainer.querySelectorAll('.perf-row');
+      const stats = [];
+      rows.forEach(row => {
+        const platform = row.querySelector('.perf-platform').value;
+        const views = parseInt(row.querySelector('.perf-views').value) || 0;
+        const conversions = parseInt(row.querySelector('.perf-conversions').value) || 0;
+        const rating = parseInt(row.querySelector('.perf-rating').value) || 0;
+        stats.push({ platform, views, conversions, rating });
+      });
+      updates.performanceStats = stats;
+      // Backward compatibility
+      if (stats.length > 0) {
+        updates.performance = stats[0];
+      } else {
+        updates.performance = null;
+      }
     }
 
     V6Store.updateCard(state.strategyId, state.cardId, updates);
@@ -648,6 +714,10 @@ window.V6Layer2 = (function () {
       $('editorSaveBtn')?.addEventListener('click', () => saveContent());
       $('editorDeleteBtn')?.addEventListener('click', () => deleteCard());
       $('backToCalendarBtn')?.addEventListener('click', () => navigateBack());
+      $('addPerfPlatformBtn')?.addEventListener('click', () => {
+        addPerformanceRow();
+        saveContent();
+      });
     } else {
       // Partially disable UI for blank draft
       if ($('magicAnalysisBtn')) {

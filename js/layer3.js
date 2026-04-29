@@ -49,32 +49,38 @@ window.V6Layer3 = (function () {
     let ratingCount = 0;
 
     cards.forEach(card => {
-      const p = card.performance;
-      const platform = p.platform || 'Other';
-
-      if (!platforms[platform]) {
-        platforms[platform] = { views: 0, conversions: 0, count: 0, totalRating: 0, ratingCount: 0 };
+      let statsArray = card.performanceStats || [];
+      if (statsArray.length === 0 && card.performance && card.performance.platform) {
+        statsArray = [card.performance]; // backward compatibility
       }
 
-      const views = Number(p.views) || 0;
-      const conversions = Number(p.conversions) || 0;
-      const rating = Number(p.rating) || 0;
+      statsArray.forEach(p => {
+        const platform = p.platform || 'Other';
 
-      platforms[platform].views += views;
-      platforms[platform].conversions += conversions;
-      platforms[platform].count += 1;
+        if (!platforms[platform]) {
+          platforms[platform] = { views: 0, conversions: 0, count: 0, totalRating: 0, ratingCount: 0 };
+        }
 
-      if (rating > 0) {
-        platforms[platform].totalRating += rating;
-        platforms[platform].ratingCount += 1;
-      }
+        const views = Number(p.views) || 0;
+        const conversions = Number(p.conversions) || 0;
+        const rating = Number(p.rating) || 0;
 
-      totalViews += views;
-      totalConversions += conversions;
-      if (rating > 0) {
-        totalRating += rating;
-        ratingCount += 1;
-      }
+        platforms[platform].views += views;
+        platforms[platform].conversions += conversions;
+        platforms[platform].count += 1;
+
+        if (rating > 0) {
+          platforms[platform].totalRating += rating;
+          platforms[platform].ratingCount += 1;
+        }
+
+        totalViews += views;
+        totalConversions += conversions;
+        if (rating > 0) {
+          totalRating += rating;
+          ratingCount += 1;
+        }
+      });
     });
 
     return {
@@ -233,23 +239,51 @@ window.V6Layer3 = (function () {
     const listEl = $('topPerformersList');
     if (!listEl) return;
 
+    // Aggregate stats per card
+    const aggregatedCards = cards.map(card => {
+      let statsArray = card.performanceStats || [];
+      if (statsArray.length === 0 && card.performance && card.performance.platform) {
+        statsArray = [card.performance]; // backward compatibility
+      }
+
+      let totalViews = 0;
+      let totalConversions = 0;
+      let totalRating = 0;
+      let ratingCount = 0;
+      let platforms = new Set();
+
+      statsArray.forEach(p => {
+        totalViews += Number(p.views) || 0;
+        totalConversions += Number(p.conversions) || 0;
+        platforms.add(p.platform || 'Other');
+        const r = Number(p.rating) || 0;
+        if (r > 0) {
+          totalRating += r;
+          ratingCount++;
+        }
+      });
+
+      return {
+        card,
+        totalViews,
+        totalConversions,
+        platforms: Array.from(platforms).join(', ') || 'N/A',
+        avgRating: ratingCount > 0 ? totalRating / ratingCount : 0
+      };
+    });
+
     // Sort by conversions desc, then views desc
-    const sorted = [...cards].sort((a, b) => {
-      const convDiff = (Number(b.performance.conversions) || 0) - (Number(a.performance.conversions) || 0);
-      if (convDiff !== 0) return convDiff;
-      return (Number(b.performance.views) || 0) - (Number(a.performance.views) || 0);
+    const sorted = aggregatedCards.sort((a, b) => {
+      if (b.totalConversions !== a.totalConversions) return b.totalConversions - a.totalConversions;
+      return b.totalViews - a.totalViews;
     });
 
     const top = sorted.slice(0, 10);
 
-    listEl.innerHTML = top.map((card, i) => {
-      const p = card.performance;
+    listEl.innerHTML = top.map((agg, i) => {
+      const { card, totalViews, totalConversions, platforms, avgRating } = agg;
       const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
-      const platform = p.platform || 'N/A';
-      const views = Number(p.views) || 0;
-      const conversions = Number(p.conversions) || 0;
-      const rating = Number(p.rating) || 0;
-      const stars = renderStars(rating);
+      const stars = renderStars(avgRating);
 
       const rankClass = i < 3 ? `rank-${i + 1}` : 'rank-other';
       const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
@@ -260,14 +294,14 @@ window.V6Layer3 = (function () {
           <div class="l3-tp-info">
             <div class="l3-tp-name">${escapeHtml(name)}</div>
             <div class="l3-tp-meta">
-              <span>📱 ${escapeHtml(platform)}</span>
-              <span>👁️ ${views.toLocaleString()}</span>
-              <span>💰 ${conversions.toLocaleString()}</span>
+              <span>📱 ${escapeHtml(platforms)}</span>
+              <span>👁️ ${totalViews.toLocaleString()}</span>
+              <span>💰 ${totalConversions.toLocaleString()}</span>
             </div>
           </div>
           <div class="l3-tp-stars">${stars}</div>
           <div class="l3-tp-metric">
-            <span class="l3-tp-metric-value">${conversions.toLocaleString()}</span>
+            <span class="l3-tp-metric-value">${totalConversions.toLocaleString()}</span>
             <span class="l3-tp-metric-label">Sales</span>
           </div>
         </li>
@@ -307,7 +341,7 @@ window.V6Layer3 = (function () {
 
   function exportCSV() {
     const allCards = V6Store.listAllCards();
-    const cardsWithPerf = allCards.filter(c => c.performance && c.performance.platform);
+    const cardsWithPerf = allCards.filter(c => (c.performanceStats && c.performanceStats.length > 0) || (c.performance && c.performance.platform));
     
     if (cardsWithPerf.length === 0) {
       alert(V6i18n.t('l3.empty.title') || 'No performance data to export.');
@@ -322,16 +356,21 @@ window.V6Layer3 = (function () {
     cardsWithPerf.forEach(card => {
       const date = card.date || '';
       const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
-      const p = card.performance;
-      const platform = p.platform || '';
-      const views = p.views || 0;
-      const conversions = p.conversions || 0;
-      const rating = p.rating || 0;
-
-      // Escape quotes in name
       const safeName = `"${name.replace(/"/g, '""')}"`;
+      
+      let statsArray = card.performanceStats || [];
+      if (statsArray.length === 0 && card.performance && card.performance.platform) {
+        statsArray = [card.performance]; // backward compatibility
+      }
 
-      csvContent += `${date},${safeName},${platform},${views},${conversions},${rating}\n`;
+      statsArray.forEach(p => {
+        const platform = p.platform || '';
+        const views = p.views || 0;
+        const conversions = p.conversions || 0;
+        const rating = p.rating || 0;
+
+        csvContent += `${date},${safeName},${platform},${views},${conversions},${rating}\n`;
+      });
     });
 
     const encodedUri = encodeURI(csvContent);

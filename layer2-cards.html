@@ -113,19 +113,14 @@
           <!-- Performance Tracking Section -->
         <div class="performance-section" style="margin-top:24px;">
           <h3 data-i18n="l2.perf.title">หัวข้อ (Title)</h3>
-          <label data-i18n="l2.perf.platform">แพลตฟอร์ม (Platform)</label>
-          <select class="form-select" id="perfPlatform">
-            <option value="Facebook">Facebook</option>
-            <option value="TikTok">TikTok</option>
-            <option value="Instagram">Instagram</option>
-            <option value="Other">Other</option>
-          </select>
-          <label data-i18n="l2.perf.views">ยอดวิว (Views)</label>
-          <input type="number" class="form-input" id="perfViews" min="0" placeholder="0" />
-          <label data-i18n="l2.perf.sales">ยอดขาย (Conversions)</label>
-          <input type="number" class="form-input" id="perfConversions" min="0" placeholder="0" />
-          <label data-i18n="l2.perf.rating">เรตติ้ง (Rating)</label>
-          <input type="number" class="form-input" id="perfRating" min="1" max="5" placeholder="5" />
+          
+          <div id="perfContainer">
+            <!-- Dynamic rows will be inserted here by JS -->
+          </div>
+
+          <button id="addPerfPlatformBtn" type="button" class="btn-outline" style="width: 100%; margin-top: 12px; border: 1px dashed rgba(255,255,255,0.2); padding: 8px;" data-i18n="l2.perf.add">
+            + เพิ่มข้อมูลแพลตฟอร์ม (Add Platform)
+          </button>
         </div>
         <!-- Magic Analysis Trigger (Sticky bottom of Editor) -->
         </aside>

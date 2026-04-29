@@ -365,6 +365,8 @@ window.V6i18n = (function () {
     'l2.perf.views':            { th: 'ยอดวิว (Views)',           en: 'Views' },
     'l2.perf.sales':            { th: 'ยอดขาย (Conversions)',     en: 'Conversions' },
     'l2.perf.rating':           { th: 'เรตติ้ง (Rating)',         en: 'Rating' },
+    'l2.perf.add':              { th: '+ เพิ่มข้อมูลแพลตฟอร์ม',     en: '+ Add Platform' },
+    'l2.perf.remove':           { th: 'ลบ',                       en: 'Remove' },
 
     /* ═══ LAYER 3 — ANALYTICS DASHBOARD ═══ */
     'header.layer3':            { th: '📊 Layer 3',                en: '📊 Layer 3' },
