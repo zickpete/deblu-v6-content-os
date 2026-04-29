@@ -596,10 +596,21 @@ window.V6Layer1 = (function () {
       
       ${(() => {
         let statsArray = card.performanceStats || [];
-        if (!statsArray.length && card.performance && (card.performance.views || card.performance.conversions)) {
+        if (!Array.isArray(statsArray)) statsArray = [];
+        if (!statsArray.length && card.performance) {
           statsArray = [card.performance]; // Backward compat
         }
-        if (!statsArray.length) return '';
+        
+        if (!statsArray.length) {
+          return `
+            <div class="form-group" style="margin-top:20px;">
+              <label class="form-label" style="font-size:10px;">📈 ประสิทธิภาพ (Performance Summary)</label>
+              <div style="background:var(--color-surface-hover); padding:10px; border-radius:10px; border:1px dashed rgba(255,255,255,0.1); color:var(--color-text-subtle); font-size:12px; text-align:center;">
+                ยังไม่มีการบันทึกข้อมูล
+              </div>
+            </div>
+          `;
+        }
         
         const rows = statsArray.map(stat => {
           const p = stat.platform || 'Facebook';
