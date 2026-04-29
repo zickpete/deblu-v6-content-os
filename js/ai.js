@@ -294,6 +294,45 @@ Output: Plain text with each option on a new line. No markdown formatting like *
     return result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
+  /**
+   * Custom Prompt Execution (Layer 3 Insights, etc.)
+   */
+  async function generateCustomResponse(systemPrompt, userPrompt) {
+    const apiKey = localStorage.getItem('v6_settings_apiKey');
+    if (!apiKey) throw new Error('KEY_MISSING');
+
+    const map = V6Store.getLayerModels();
+    const model = map.layer3 || V6_CONFIG.geminiModel || 'gemini-1.5-flash';
+    
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n---\n\n${userPrompt}` }] }],
+      generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+    };
+
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`API Error: ${res.status} ${errData.error?.message || ''}`);
+    }
+    const result = await res.json();
+    return result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  function formatMarkdown(text) {
+    if (!text) return '';
+    // Simple markdown-ish to HTML conversion for UI display
+    return text
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      .replace(/^\* (.*$)/gim, '<li>$1</li>')
+      .replace(/^- (.*$)/gim, '<li>$1</li>')
+      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/\*(.*)\*/gim, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  }
+
   /* ─── Main Generate Function ─── */
   /**
    * Generate a monthly strategy from LLM or mock.
@@ -337,6 +376,6 @@ Output: Plain text with each option on a new line. No markdown formatting like *
     return validateResponse(raw);
   }
 
-  return { generate, generateTopics, generateToolResponse, callGemini };
+  return { generate, generateTopics, generateToolResponse, generateCustomResponse, formatMarkdown, callGemini };
 })();
 

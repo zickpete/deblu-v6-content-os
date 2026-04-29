@@ -411,6 +411,95 @@ window.V6Layer3 = (function () {
     });
   }
 
+  async function generateInsights() {
+    const box = $('aiInsightBox');
+    const btn = $('genInsightBtn');
+    
+    // 1. Get current stats
+    const cards = V6Store.getCards();
+    const stats = calculateStats(cards);
+    
+    if (cards.length === 0) {
+      toast('ไม่มีข้อมูลสำหรับวิเคราะห์', 'error');
+      return;
+    }
+
+    // 2. Loading state
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px;"></span> กำลังประมวลผลด้วย AI...`;
+    }
+    
+    // 3. Prepare data for AI
+    const platformsText = Object.entries(stats.platforms).map(([p, s]) => 
+      `- ${p}: ${s.views} views, ${s.conversions} conversions, Avg Rating: ${(s.totalRating / s.ratingCount || 0).toFixed(1)}`
+    ).join('\n');
+
+    const topCards = cards
+      .filter(c => c.performanceStats && c.performanceStats.length > 0)
+      .sort((a, b) => {
+        const aConv = a.performanceStats.reduce((sum, p) => sum + (Number(p.conversions) || 0), 0);
+        const bConv = b.performanceStats.reduce((sum, p) => sum + (Number(p.conversions) || 0), 0);
+        return bConv - aConv;
+      })
+      .slice(0, 3)
+      .map(c => `- ${c.customTitle || c.title}: ${c.performanceStats.reduce((sum, p) => sum + (Number(p.conversions) || 0), 0)} conversions`)
+      .join('\n');
+
+    const systemPrompt = `คุณคือ AI Content Strategist ประจำระบบ BAM OS v.6.1 (Deblu Thailand). 
+วิเคราะห์แนวโน้มและโอกาสจากข้อมูลประสิทธิภาพคอนเทนต์ล่าสุด`;
+
+    const userPrompt = `
+สรุปภาพรวมข้อมูล:
+- คอนเทนต์ทั้งหมด: ${stats.totalCards} ชิ้น
+- ยอดวิวรวม: ${stats.totalViews}
+- ยอดขายรวม: ${stats.totalConversions}
+- เรตติ้งเฉลี่ย: ${stats.avgRating}
+
+ประสิทธิภาพรายแพลตฟอร์ม:
+${platformsText}
+
+คอนเทนต์ที่ทำได้ดีที่สุด (Top Performers):
+${topCards}
+
+โจทย์: 
+1. วิเคราะห์แนวโน้ม (Trends) ว่าแพลตฟอร์มไหนทำได้ดีที่สุดเพราะอะไร
+2. ให้คำแนะนำ (Actionable Advice) 3 ข้อ เพื่อเพิ่มยอดขาย (Conversions) ในเดือนถัดไป
+3. สรุปภาพรวมเป็นประโยคที่ให้กำลังใจและดูเป็นมืออาชีพ
+
+ตอบเป็นภาษาไทย โดยใช้ Markdown (ใช้ h3 สำหรับหัวข้อ และ bullet points)
+    `;
+
+    try {
+      // 4. Call AI
+      const result = await V6AI.generateCustomResponse(systemPrompt, userPrompt);
+      
+      // 5. Render result
+      box.innerHTML = `
+        <div class="ai-insight-content">
+          ${V6AI.formatMarkdown(result)}
+          <button class="btn-gen-insight" style="margin-top:20px; font-size:12px; padding:8px 20px; background: rgba(166,140,255,0.2); border:1px solid var(--accent-purple);" onclick="V6Layer3.generateInsights()">
+            🔄 วิเคราะห์ใหม่ (Regenerate)
+          </button>
+        </div>
+      `;
+    } catch (err) {
+      if (err.message === 'KEY_MISSING') {
+         box.innerHTML = `
+           <div style="color:#ef4444; padding:20px;">
+             ⚠️ ไม่พบ API Key กรุณาใส่ API Key ในหน้า Settings (Layer 0)
+           </div>
+         `;
+      } else {
+        toast(`Error: ${err.message}`, 'error');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `✨ วิเคราะห์ข้อมูล (Generate Insights)`;
+        }
+      }
+    }
+  }
+
   function refresh() {
     renderDashboard();
   }
@@ -425,5 +514,5 @@ window.V6Layer3 = (function () {
   // Re-render on cloud sync
   window.addEventListener('v6:cloudSync', () => { setTimeout(renderDashboard, 500); });
 
-  return { init, exportPDF, exportCSV, exportPNG, refresh };
+  return { init, exportPDF, exportCSV, exportPNG, refresh, generateInsights };
 })();
