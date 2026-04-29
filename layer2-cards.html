@@ -110,7 +110,24 @@
             <!-- Dynamically populated via V6Layer2.renderTools() -->
           </div>
           
-          <!-- Magic Analysis Trigger (Sticky bottom of Drawer or Editor?) The user said "At the bottom [of the Editor], a prominent Magic Analysis button". But placing it in drawer bottom keeps editor clean. Let's place it at the Editor bottom as requested! -->
+          <!-- Performance Tracking Section -->
+        <div class="performance-section" style="margin-top:24px;">
+          <h3 data-i18n="l2.perf.title">📈 Performance Tracking</h3>
+          <label data-i18n="l2.perf.platform">Platform</label>
+          <select class="form-select" id="perfPlatform">
+            <option value="Facebook">Facebook</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Other">Other</option>
+          </select>
+          <label data-i18n="l2.perf.views">Views</label>
+          <input type="number" class="form-input" id="perfViews" min="0" placeholder="0" />
+          <label data-i18n="l2.perf.sales">Sales/Conversions</label>
+          <input type="number" class="form-input" id="perfConversions" min="0" placeholder="0" />
+          <label data-i18n="l2.perf.rating">Rating (1‑5)</label>
+          <input type="number" class="form-input" id="perfRating" min="1" max="5" placeholder="5" />
+        </div>
+        <!-- Magic Analysis Trigger (Sticky bottom of Editor) -->
         </aside>
 
       </div>

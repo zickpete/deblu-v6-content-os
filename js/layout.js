@@ -24,6 +24,14 @@ class V6Header extends HTMLElement {
         <span class="crumb-sep">›</span>
         <span class="crumb-active" data-i18n="header.crumb.factory">Layer 2: Factory</span>
       `;
+    } else if (layer === '3') {
+      breadcrumbHTML = `
+        <a href="layer0-brain.html" style="color:#475569;text-decoration:none;" data-i18n="header.crumb.brain">Layer 0: Brain</a>
+        <span class="crumb-sep">›</span>
+        <a href="layer1-calendar.html" style="color:#475569;text-decoration:none;" data-i18n="header.crumb.calendar">Layer 1: Calendar</a>
+        <span class="crumb-sep">›</span>
+        <span class="crumb-active" data-i18n="header.crumb.analytics">Layer 3: Analytics</span>
+      `;
     }
 
     this.innerHTML = `
@@ -46,6 +54,7 @@ class V6Header extends HTMLElement {
           <a href="layer0-brain.html" class="layer-pill ${layer === '0' ? 'active' : ''}" data-i18n="header.layer0">🧠 Layer 0</a>
           <a href="layer1-calendar.html" class="layer-pill ${layer === '1' ? 'active' : ''}" data-i18n="header.layer1">📅 Layer 1</a>
           <a href="layer2-cards.html" class="layer-pill ${layer === '2' ? 'active' : ''}" data-i18n="header.layer2">🃏 Layer 2</a>
+          <a href="layer3.html" class="layer-pill ${layer === '3' ? 'active' : ''}" data-i18n="header.layer3">📊 Layer 3</a>
         </nav>
 
           <div class="header-actions">
@@ -529,6 +538,12 @@ function closeAll() {
   // Settings Modal overlay
   const settingsOverlay = document.getElementById('settingsOverlay');
   if(settingsOverlay) settingsOverlay.classList.replace('flex', 'hidden');
+
+  // Safety cleanup for any lingering generic modal backdrops
+  document.querySelectorAll('.modal-backdrop').forEach(b => {
+    b.classList.remove('show', 'open', 'flex');
+    b.style.display = 'none';
+  });
 
   document.body.classList.remove('modal-active'); // Remove background blur
   closePopovers();

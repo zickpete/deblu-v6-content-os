@@ -358,6 +358,46 @@ window.V6i18n = (function () {
     'l2.tool.43':               { th: '🎨 ไกด์คู่สีที่ควรใช้ (Color Palette Guide)', en: '🎨 Color Palette Guide' },
     'l2.tool.44':               { th: '📱 ร่างแบบภาพหน้าปก (Thumbnail Sketcher)', en: '📱 Thumbnail Sketcher' },
     'l2.tool.45':               { th: '🎬 สตอรี่บอร์ดวิดีโอสั้น (Short Video Storyboard)', en: '🎬 Short Video Storyboard' },
+
+    /* ═══ LAYER 2 — PERFORMANCE TRACKING ═══ */
+    'l2.perf.title':            { th: '📈 ติดตามประสิทธิภาพ',      en: '📈 Performance Tracking' },
+    'l2.perf.platform':         { th: 'แพลตฟอร์ม',                en: 'Platform' },
+    'l2.perf.views':            { th: 'ยอดเข้าชม (Views)',         en: 'Views' },
+    'l2.perf.sales':            { th: 'ยอดขาย/Conversions',       en: 'Sales/Conversions' },
+    'l2.perf.rating':           { th: 'คะแนน (1‑5)',               en: 'Rating (1‑5)' },
+
+    /* ═══ LAYER 3 — ANALYTICS DASHBOARD ═══ */
+    'header.layer3':            { th: '📊 Layer 3',                en: '📊 Layer 3' },
+    'header.crumb.analytics':   { th: 'Layer 3: Analytics',        en: 'Layer 3: Analytics' },
+
+    'l3.title':                 { th: '📊 Analytics Dashboard',    en: '📊 Analytics Dashboard' },
+    'l3.subtitle':              { th: 'ภาพรวมประสิทธิภาพคอนเทนต์ทั้งหมดของคุณ',
+                                  en: 'Overview of your entire content performance' },
+
+    'l3.btn.refresh':           { th: 'รีเฟรช',                   en: 'Refresh' },
+    'l3.btn.csv':               { th: 'Export CSV',                en: 'Export CSV' },
+    'l3.btn.png':               { th: 'Save as PNG',               en: 'Save as PNG' },
+    'l3.btn.export':            { th: 'Export PDF',                en: 'Export PDF' },
+
+    'l3.stat.cards':            { th: 'Content Cards',             en: 'Content Cards' },
+    'l3.stat.views':            { th: 'ยอดเข้าชมรวม',              en: 'Total Views' },
+    'l3.stat.conversions':      { th: 'ยอดขายรวม',                en: 'Total Conversions' },
+    'l3.stat.rating':           { th: 'คะแนนเฉลี่ย',              en: 'Avg. Rating' },
+
+    'l3.chart.platform.title':  { th: '📊 เปรียบเทียบแพลตฟอร์ม',  en: '📊 Platform Comparison' },
+    'l3.chart.platform.sub':    { th: 'เปรียบเทียบ Views & Conversions แยกตาม Platform',
+                                  en: 'Compare Views & Conversions by Platform' },
+    'l3.chart.distribution.title': { th: '🍩 สัดส่วน Views',       en: '🍩 Views Distribution' },
+    'l3.chart.distribution.sub':   { th: 'สัดส่วน Views ตาม Platform',
+                                     en: 'Views share by Platform' },
+
+    'l3.top.title':             { th: '🏆 Top Performers',        en: '🏆 Top Performers' },
+    'l3.top.sub':               { th: 'คอนเทนต์ที่มี Conversions สูงสุด',
+                                  en: 'Content cards with the highest conversions' },
+
+    'l3.empty.title':           { th: 'ยังไม่มีข้อมูลประสิทธิภาพ',  en: 'No performance data yet' },
+    'l3.empty.desc':            { th: 'เริ่มกรอกข้อมูล Performance Tracking ใน Layer 2 เพื่อดูแดชบอร์ดวิเคราะห์ของคุณ',
+                                  en: 'Start entering Performance Tracking data in Layer 2 to see your analytics dashboard' },
   };
 
   /* ─── Core API ─── */

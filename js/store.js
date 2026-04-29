@@ -109,6 +109,22 @@ window.V6Store = (function () {
     return s;
   }
 
+  /* ─── Aggregation (Layer 3) ─── */
+  function listAllCards() {
+    const allCalendars = getAllCalendars();
+    const strategies = getAll();
+    const result = [];
+    for (const stratId of Object.keys(allCalendars)) {
+      const strat = strategies.find(s => s.id === stratId);
+      const stratName = strat ? (strat.month || strat.monthly_theme || stratId) : stratId;
+      const cards = allCalendars[stratId] || [];
+      cards.forEach(card => {
+        result.push({ ...card, _strategyId: stratId, _strategyName: stratName });
+      });
+    }
+    return result;
+  }
+
   /* ─── Settings ─── */
   function saveApiKey(key) { localStorage.setItem(API_KEY_KEY, key); syncSettings(); }
   function getApiKey() { return localStorage.getItem(API_KEY_KEY); }
@@ -250,6 +266,7 @@ window.V6Store = (function () {
     saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
+    listAllCards,
     initFirestoreSync, getSyncStatus
   };
 })();

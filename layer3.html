@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layer 3: Analytics Dashboard — BAM OS v.6.1 | Deblu Thailand</title>
+  <meta name="description" content="Performance Analytics Dashboard — Track engagement, KPIs, and content performance." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/layer3.css" />
+
+  <!-- Scripts & Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- ═══ HEADER ═══ -->
+    <v6-header active-layer="3"></v6-header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="l3-main" role="main" id="mainContent">
+
+      <!-- Page Header -->
+      <div class="l3-page-header">
+        <h1 class="l3-page-title" data-i18n="l3.title">📊 Analytics Dashboard</h1>
+        <p class="l3-page-subtitle" data-i18n="l3.subtitle">ภาพรวมประสิทธิภาพคอนเทนต์ทั้งหมดของคุณ</p>
+      </div>
+
+      <!-- Export Bar -->
+      <div class="l3-export-bar">
+        <button class="btn-export" onclick="V6Layer3.refresh()" id="refreshBtn">
+          🔄 <span data-i18n="l3.btn.refresh">รีเฟรช</span>
+        </button>
+        <button class="btn-export" onclick="V6Layer3.exportCSV()" id="exportCsvBtn">
+          📊 <span data-i18n="l3.btn.csv">Export CSV</span>
+        </button>
+        <button class="btn-export" onclick="V6Layer3.exportPNG()" id="exportPngBtn">
+          🖼️ <span data-i18n="l3.btn.png">Save as PNG</span>
+        </button>
+        <button class="btn-export" onclick="V6Layer3.exportPDF()" id="exportPdfBtn">
+          📄 <span data-i18n="l3.btn.export">Export PDF</span>
+        </button>
+      </div>
+
+      <!-- Empty State (shown when no data) -->
+      <div class="l3-empty-state" id="l3EmptyState" style="display: none;">
+        <div class="l3-empty-icon">📊</div>
+        <div class="l3-empty-title" data-i18n="l3.empty.title">ยังไม่มีข้อมูลประสิทธิภาพ</div>
+        <div class="l3-empty-desc" data-i18n="l3.empty.desc">เริ่มกรอกข้อมูล Performance Tracking ใน Layer 2 เพื่อดูแดชบอร์ดวิเคราะห์ของคุณ</div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div id="l3Dashboard" style="display: block;">
+
+        <!-- Stats Summary -->
+        <div class="l3-stats-row">
+          <div class="l3-stat-card">
+            <div class="l3-stat-icon">🃏</div>
+            <div class="l3-stat-value" id="statTotalCards">0</div>
+            <div class="l3-stat-label" data-i18n="l3.stat.cards">Content Cards</div>
+          </div>
+          <div class="l3-stat-card">
+            <div class="l3-stat-icon">👁️</div>
+            <div class="l3-stat-value" id="statTotalViews">0</div>
+            <div class="l3-stat-label" data-i18n="l3.stat.views">Total Views</div>
+          </div>
+          <div class="l3-stat-card">
+            <div class="l3-stat-icon">💰</div>
+            <div class="l3-stat-value" id="statTotalConversions">0</div>
+            <div class="l3-stat-label" data-i18n="l3.stat.conversions">Total Conversions</div>
+          </div>
+          <div class="l3-stat-card">
+            <div class="l3-stat-icon">⭐</div>
+            <div class="l3-stat-value" id="statAvgRating">—</div>
+            <div class="l3-stat-label" data-i18n="l3.stat.rating">Avg. Rating</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="l3-charts-grid">
+          <div class="l3-chart-card">
+            <div class="l3-chart-title" data-i18n="l3.chart.platform.title">📊 Platform Comparison</div>
+            <div class="l3-chart-subtitle" data-i18n="l3.chart.platform.sub">เปรียบเทียบ Views & Conversions แยกตาม Platform</div>
+            <div class="l3-chart-canvas-wrap">
+              <canvas id="platformChart"></canvas>
+            </div>
+          </div>
+          <div class="l3-chart-card">
+            <div class="l3-chart-title" data-i18n="l3.chart.distribution.title">🍩 Views Distribution</div>
+            <div class="l3-chart-subtitle" data-i18n="l3.chart.distribution.sub">สัดส่วน Views ตาม Platform</div>
+            <div class="l3-chart-canvas-wrap">
+              <canvas id="viewsConversionsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="l3-top-performers">
+          <div class="l3-tp-title" data-i18n="l3.top.title">🏆 Top Performers</div>
+          <div class="l3-tp-subtitle" data-i18n="l3.top.sub">คอนเทนต์ที่มี Conversions สูงสุด</div>
+          <ul class="l3-tp-list" id="topPerformersList">
+            <!-- Rendered via JS -->
+          </ul>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+
+  <!-- ═══ Toast ═══ -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ═══ Scripts ═══ -->
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore-compat.js"></script>
+  <script src="./js/firebase.js"></script>
+
+  <script src="./js/i18n.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/store.js"></script>
+  <script src="./js/scratch.js"></script>
+  <script src="./js/layout.js"></script>
+  <script src="./js/layer3.js"></script>
+
+</body>
+</html>

@@ -42,6 +42,7 @@ window.V6Layer2 = (function () {
         state.strategy = JSON.parse(bridgedStrat);
         state.cardId = state.card.id;
         state.strategyId = state.strategy.id;
+        state.isBridgedEdit = true;
         // Clear bridge to avoid stale data next time
         // localStorage.removeItem('v6_edit_card_data');
         return true;
@@ -131,6 +132,14 @@ window.V6Layer2 = (function () {
     $('cibTrackBadge').style.borderColor = color;
     $('cibTrackBadge').style.color = '#e2e8f0';
 
+    // Performance Tracking fields
+    if (card.performance) {
+      $('perfPlatform').value = card.performance.platform || 'Facebook';
+      $('perfViews').value = card.performance.views || '';
+      $('perfConversions').value = card.performance.conversions || '';
+      $('perfRating').value = card.performance.rating || '';
+    }
+
     const lang = typeof V6i18n !== 'undefined' ? V6i18n.getLang() : 'th';
     const displayTopic = (lang === 'en' ? card.topic_en : card.topic_th) || card.suggested_topic || 'No topic';
     $('cibTopic').textContent = displayTopic;
@@ -138,6 +147,14 @@ window.V6Layer2 = (function () {
     const dateInput = $('editorDate');
     if (dateInput) {
       dateInput.value = card.date;
+    }
+
+    if (state.isBridgedEdit) {
+      const saveBtn = $('editorSaveBtn');
+      if (saveBtn) {
+        const lbl = saveBtn.querySelector('.btn-lbl');
+        if (lbl) lbl.textContent = 'Update Card';
+      }
     }
 
     // Editor Status Dropdown
@@ -187,6 +204,20 @@ window.V6Layer2 = (function () {
     const dateInput = $('editorDate');
     if (dateInput) {
        updates.date = dateInput.value;
+    }
+
+    // Performance Tracking data
+    const perfPlatform = $('perfPlatform');
+    const perfViews = $('perfViews');
+    const perfConversions = $('perfConversions');
+    const perfRating = $('perfRating');
+    if (perfPlatform) {
+      updates.performance = {
+        platform: perfPlatform.value || 'Facebook',
+        views: parseInt(perfViews.value) || 0,
+        conversions: parseInt(perfConversions.value) || 0,
+        rating: parseInt(perfRating.value) || 0,
+      };
     }
 
     V6Store.updateCard(state.strategyId, state.cardId, updates);
