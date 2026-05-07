@@ -306,7 +306,7 @@ window.V6Layer3 = (function () {
       const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
 
       return `
-        <li class="l3-tp-item" onclick="V6Layer3.showPostDetails('${card.id}')">
+        <li class="l3-tp-item" role="button" tabindex="0" onclick="V6Layer3.showPostDetails('${card.id}')">
           <div class="l3-tp-rank ${rankClass}">${rankLabel}</div>
           <div class="l3-tp-info">
             <div class="l3-tp-name">${escapeHtml(name)}</div>
