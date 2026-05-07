@@ -18,6 +18,8 @@
   <!-- Scripts & Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
 
 </head>
 <body>
@@ -57,6 +59,9 @@
         </button>
         <button class="btn-export" onclick="V6Layer3.exportPDF()" id="exportPdfBtn">
           📄 <span data-i18n="l3.btn.export">Export PDF</span>
+        </button>
+        <button class="btn-export" onclick="V6Layer3.exportToPPTX()" id="exportPptxBtn">
+          📊 <span data-i18n="l3.btn.pptx">Export Presentation (PPTX)</span>
         </button>
       </div>
 

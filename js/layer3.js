@@ -411,6 +411,167 @@ window.V6Layer3 = (function () {
     });
   }
 
+  function exportToPPTX() {
+    if (typeof pptxgen === 'undefined') {
+      alert('Error: PptxGenJS library not loaded.');
+      return;
+    }
+
+    const allCards = V6Store.listAllCards();
+    const cardsWithPerf = allCards.filter(c => (c.performanceStats && c.performanceStats.length > 0) || (c.performance && c.performance.platform));
+
+    if (cardsWithPerf.length === 0) {
+      alert('No performance data to export.');
+      return;
+    }
+
+    // 1. Data Aggregation (Self-audit: Handle array structure safely)
+    let totalViews = 0;
+    let totalSales = 0;
+    let platformData = { 'TikTok': { views: 0, sales: 0 }, 'Facebook': { views: 0, sales: 0 }, 'Instagram': { views: 0, sales: 0 }, 'Other': { views: 0, sales: 0 } };
+    let topCards = [];
+
+    cardsWithPerf.forEach(card => {
+      const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
+      let statsArray = card.performanceStats || [];
+      if (statsArray.length === 0 && card.performance && card.performance.platform) {
+        statsArray = [card.performance];
+      }
+
+      let cardViews = 0;
+      let cardSales = 0;
+      let cardPlatforms = new Set();
+
+      statsArray.forEach(p => {
+        const pViews = Number(p.views) || 0;
+        const pSales = Number(p.conversions) || 0;
+        const pName = p.platform || 'Other';
+        
+        totalViews += pViews;
+        totalSales += pSales;
+        cardViews += pViews;
+        cardSales += pSales;
+        cardPlatforms.add(pName);
+
+        if (platformData[pName]) {
+          platformData[pName].views += pViews;
+          platformData[pName].sales += pSales;
+        } else {
+          platformData['Other'].views += pViews;
+          platformData['Other'].sales += pSales;
+        }
+      });
+
+      topCards.push({ title: name, views: cardViews, sales: cardSales, platforms: Array.from(cardPlatforms).join(', ') });
+    });
+
+    // Sort for top performers
+    topCards.sort((a, b) => b.views - a.views);
+
+    // 2. Initialize PPTX (Dark/Minimalist Theme)
+    let pptx = new pptxgen();
+    pptx.author = 'BAM OS v.6.1';
+    pptx.company = 'deblu Thailand';
+    pptx.title = 'Monthly Performance Report';
+
+    const bgDark = "0F172A";
+    const textWhite = "F8FAFC";
+    const textMuted = "94A3B8";
+    const accentPrimary = "3B82F6";
+    const accentSecondary = "EC4899";
+
+    // Slide 1: Cover
+    let slide1 = pptx.addSlide();
+    slide1.background = { color: bgDark };
+    slide1.addText("deblu Content OS - Monthly Performance Report", { 
+      x: 0.5, y: 2, w: 9, h: 1.5, fontSize: 32, color: textWhite, align: "center", bold: true 
+    });
+    const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    slide1.addText(currentDate, { 
+      x: 0.5, y: 3.5, w: 9, h: 1, fontSize: 18, color: textMuted, align: "center" 
+    });
+
+    // Slide 2: Executive Summary
+    let slide2 = pptx.addSlide();
+    slide2.background = { color: bgDark };
+    slide2.addText("Executive Summary", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+    
+    slide2.addShape(pptx.ShapeType.rect, { x: 1, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
+    slide2.addText("Total Views", { x: 1, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
+    slide2.addText(totalViews.toLocaleString(), { x: 1, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentPrimary, align: "center", bold: true });
+
+    slide2.addShape(pptx.ShapeType.rect, { x: 5.5, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
+    slide2.addText("Total Sales", { x: 5.5, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
+    slide2.addText(totalSales.toLocaleString(), { x: 5.5, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentSecondary, align: "center", bold: true });
+
+    // Slide 3: Platform Comparison
+    let slide3 = pptx.addSlide();
+    slide3.background = { color: bgDark };
+    slide3.addText("Platform Comparison", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+
+    let chartData = [
+      {
+        name: "Views",
+        labels: ["TikTok", "Facebook", "Instagram"],
+        values: [platformData['TikTok'].views, platformData['Facebook'].views, platformData['Instagram'].views]
+      },
+      {
+        name: "Sales",
+        labels: ["TikTok", "Facebook", "Instagram"],
+        values: [platformData['TikTok'].sales, platformData['Facebook'].sales, platformData['Instagram'].sales]
+      }
+    ];
+
+    slide3.addChart(pptx.ChartType.bar, chartData, { 
+      x: 0.5, y: 1.5, w: 9, h: 3.5, 
+      barDir: 'col', 
+      showLegend: true,
+      legendPos: 't',
+      legendColor: textMuted,
+      chartColors: [accentPrimary, accentSecondary],
+      valAxisLabelColor: textMuted,
+      catAxisLabelColor: textMuted,
+      valGridLine: { color: "1E293B" },
+      showValue: true,
+      valAxisLabelFormatCode: '#,##0'
+    });
+
+    // Slide 4: Top Performers
+    let slide4 = pptx.addSlide();
+    slide4.background = { color: bgDark };
+    slide4.addText("Top 3 Performers", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+
+    let tableData = [
+      [
+        { text: "Rank", options: { bold: true, color: textWhite, fill: "1E293B" } },
+        { text: "Title", options: { bold: true, color: textWhite, fill: "1E293B" } },
+        { text: "Platform(s)", options: { bold: true, color: textWhite, fill: "1E293B" } },
+        { text: "Views", options: { bold: true, color: textWhite, fill: "1E293B", align: "right" } }
+      ]
+    ];
+
+    const top3 = topCards.slice(0, 3);
+    top3.forEach((post, idx) => {
+      tableData.push([
+        { text: `#${idx + 1}`, options: { color: accentSecondary, bold: true } },
+        { text: post.title, options: { color: textWhite } },
+        { text: post.platforms, options: { color: textMuted } },
+        { text: post.views.toLocaleString(), options: { color: accentPrimary, bold: true, align: "right" } }
+      ]);
+    });
+
+    slide4.addTable(tableData, { 
+      x: 0.5, y: 1.5, w: 9, 
+      fill: "0F172A", 
+      border: { type: "solid", color: "1E293B", pt: 1 },
+      colW: [0.8, 4.2, 2.0, 2.0],
+      fontSize: 14
+    });
+
+    // Save
+    pptx.writeFile({ fileName: `deblu_Performance_Report_${new Date().toISOString().split('T')[0]}.pptx` });
+  }
+
   async function generateInsights() {
     const box = $('aiInsightBox');
     const btn = $('genInsightBtn');
@@ -514,5 +675,5 @@ ${topCards}
   // Re-render on cloud sync
   window.addEventListener('v6:cloudSync', () => { setTimeout(renderDashboard, 500); });
 
-  return { init, exportPDF, exportCSV, exportPNG, refresh, generateInsights };
+  return { init, exportPDF, exportCSV, exportPNG, exportToPPTX, refresh, generateInsights };
 })();
