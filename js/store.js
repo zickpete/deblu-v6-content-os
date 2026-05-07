@@ -109,6 +109,47 @@ window.V6Store = (function () {
     return s;
   }
 
+  /* ─── Reset Calendar Plan (Layer 1 Reset Button) ─── */
+  function resetCalendarPlan() {
+    // Clear all calendars and unlock all strategies
+    saveAllCalendars({});
+    const all = getAll().map(s => ({
+      ...s,
+      status: 'draft',
+      calendar_locked: false,
+      calendar_locked_at: null,
+      approved_at: null
+    }));
+    saveAll(all);
+    console.log('[V6Store] Calendar plan reset — all calendars cleared, strategies unlocked');
+  }
+
+  /* ─── Export Strategy as JSON (Layer 0 Export Button) ─── */
+  function exportJSON(strategyId) {
+    const strategy = getById(strategyId);
+    if (!strategy) {
+      console.warn('[V6Store] exportJSON: Strategy not found:', strategyId);
+      return;
+    }
+    const calendar = getCalendar(strategyId);
+    const exportData = {
+      strategy,
+      calendar,
+      exported_at: new Date().toISOString(),
+      version: 'v6.1'
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `deblu-strategy-${strategy.month || strategyId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('[V6Store] Exported strategy:', strategyId);
+  }
+
   /* ─── Aggregation (Layer 3) ─── */
   function listAllCards() {
     const allCalendars = getAllCalendars();
@@ -277,6 +318,7 @@ window.V6Store = (function () {
     saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
+    resetCalendarPlan, exportJSON,
     listAllCards, getCard,
     initFirestoreSync, getSyncStatus
   };
