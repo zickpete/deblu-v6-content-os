@@ -48,6 +48,9 @@
 
       <!-- Export Bar -->
       <div class="l3-export-bar">
+        <button class="btn btn-primary" onclick="V6Layer3.generateInsights()" id="genInsightBtn" style="background: linear-gradient(135deg, #a68cff 0%, #3b82f6 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-right: auto; box-shadow: 0 4px 12px rgba(166,140,255,0.3);">
+          ✨ <span data-i18n="l3.btn.analyze">ให้ AI วิเคราะห์สถิติ (Analyze Dashboard)</span>
+        </button>
         <button class="btn-export" onclick="V6Layer3.refresh()" id="refreshBtn">
           🔄 <span data-i18n="l3.btn.refresh">รีเฟรช</span>
         </button>
@@ -74,6 +77,14 @@
 
       <!-- Dashboard Content -->
       <div id="l3Dashboard" style="display: block;">
+
+        <!-- AI Insights Box -->
+        <div id="aiInsightBox" class="l3-card" style="margin-bottom: 24px; border-top: 4px solid #a68cff;">
+           <h3 style="margin-bottom: 12px; color: #a68cff; display: flex; align-items: center; gap: 8px;">
+             ✨ Executive Summary (AI Analysis)
+           </h3>
+           <div style="font-size: 14px; color: #94A3B8;">🤖 กดปุ่มวิเคราะห์สถิติด้านบน เพื่อให้ AI สรุปข้อมูลให้คุณ</div>
+        </div>
 
         <!-- Stats Summary -->
         <div class="l3-stats-row">

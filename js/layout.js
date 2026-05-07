@@ -262,6 +262,13 @@ const AI_MODAL_HTML = `
           <div class="model-dropdown-popover"></div>
         </div>
 
+        <!-- Layer 3 Mapping -->
+        <div class="layer-mapping-item">
+          <label>📊 Layer 3: The Analyst (Analytics & Insights)</label>
+          <button type="button" class="layer-model-trigger" data-layer="layer3">Placeholder Model</button>
+          <div class="model-dropdown-popover"></div>
+        </div>
+
       </div>
 
     <div class="form-group">

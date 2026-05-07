@@ -1,12 +1,29 @@
 /* ================================================
-   V.6 Content OS — Layer 3: Analytics Engine
+   V.6 Content OS — Layer3: Analytics Engine
    Chart.js + V6Store Integration
    ================================================ */
 
 window.V6Layer3 = (function () {
   'use strict';
 
-  const $ = id => document.getElementById(id);
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg, type = 'info', dur = 3500) {
+    let t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${msg}</span>`;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => {
+      t.style.opacity = '1';
+      t.style.transform = 'translateY(0)';
+    });
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(100%)';
+      setTimeout(() => t.remove(), 300);
+    }, dur);
+  }
+
   let platformChart = null;
   let viewsConversionsChart = null;
 
@@ -411,7 +428,7 @@ window.V6Layer3 = (function () {
     });
   }
 
-  function exportToPPTX() {
+  async function exportToPPTX() {
     if (typeof pptxgen === 'undefined') {
       alert('Error: PptxGenJS library not loaded.');
       return;
@@ -425,151 +442,225 @@ window.V6Layer3 = (function () {
       return;
     }
 
-    // 1. Data Aggregation (Self-audit: Handle array structure safely)
-    let totalViews = 0;
-    let totalSales = 0;
-    let platformData = { 'TikTok': { views: 0, sales: 0 }, 'Facebook': { views: 0, sales: 0 }, 'Instagram': { views: 0, sales: 0 }, 'Other': { views: 0, sales: 0 } };
-    let topCards = [];
+    const btn = $('exportPptxBtn');
+    const originalBtnHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin-right:8px;"></span> 🤖 AI Generating...`;
+    }
 
-    cardsWithPerf.forEach(card => {
-      const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
-      let statsArray = card.performanceStats || [];
-      if (statsArray.length === 0 && card.performance && card.performance.platform) {
-        statsArray = [card.performance];
-      }
+    try {
+      // 1. Data Aggregation (Self-audit: Handle array structure safely)
+      let totalViews = 0;
+      let totalSales = 0;
+      let platformData = { 'TikTok': { views: 0, sales: 0 }, 'Facebook': { views: 0, sales: 0 }, 'Instagram': { views: 0, sales: 0 }, 'Other': { views: 0, sales: 0 } };
+      let topCards = [];
 
-      let cardViews = 0;
-      let cardSales = 0;
-      let cardPlatforms = new Set();
-
-      statsArray.forEach(p => {
-        const pViews = Number(p.views) || 0;
-        const pSales = Number(p.conversions) || 0;
-        const pName = p.platform || 'Other';
-        
-        totalViews += pViews;
-        totalSales += pSales;
-        cardViews += pViews;
-        cardSales += pSales;
-        cardPlatforms.add(pName);
-
-        if (platformData[pName]) {
-          platformData[pName].views += pViews;
-          platformData[pName].sales += pSales;
-        } else {
-          platformData['Other'].views += pViews;
-          platformData['Other'].sales += pSales;
+      cardsWithPerf.forEach(card => {
+        const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
+        let statsArray = card.performanceStats || [];
+        if (statsArray.length === 0 && card.performance && card.performance.platform) {
+          statsArray = [card.performance];
         }
+
+        let cardViews = 0;
+        let cardSales = 0;
+        let cardPlatforms = new Set();
+
+        statsArray.forEach(p => {
+          const pViews = Number(p.views) || 0;
+          const pSales = Number(p.conversions) || 0;
+          const pName = p.platform || 'Other';
+          
+          totalViews += pViews;
+          totalSales += pSales;
+          cardViews += pViews;
+          cardSales += pSales;
+          cardPlatforms.add(pName);
+
+          if (platformData[pName]) {
+            platformData[pName].views += pViews;
+            platformData[pName].sales += pSales;
+          } else {
+            platformData['Other'].views += pViews;
+            platformData['Other'].sales += pSales;
+          }
+        });
+
+        topCards.push({ title: name, views: cardViews, sales: cardSales, platforms: Array.from(cardPlatforms).join(', ') });
       });
 
-      topCards.push({ title: name, views: cardViews, sales: cardSales, platforms: Array.from(cardPlatforms).join(', ') });
-    });
+      // Sort for top performers
+      topCards.sort((a, b) => b.views - a.views);
 
-    // Sort for top performers
-    topCards.sort((a, b) => b.views - a.views);
+      // --- AI API CALL ---
+      let aiSlides = [];
+      const isApiKeyAvailable = !!localStorage.getItem('v6_settings_apiKey');
+      
+      if (isApiKeyAvailable) {
+        const systemPrompt = `You are an expert Content Strategist & Data Analyst for Deblu Thailand (a premium footwear brand).
+Your task is to analyze social media performance data and output an insightful presentation.
+Output MUST be a strict JSON array of objects. Each object represents one slide.
+Format exactly like this (NO markdown blocks, NO backticks outside of the JSON string if possible, just raw JSON array):
+[
+  {
+    "title": "Insight Slide Title",
+    "bullets": ["Bullet point 1 analyzing the data", "Bullet point 2 with an actionable recommendation"]
+  }
+]
+Generate 2 to 4 highly professional, analytical slides based on the provided data. Tone: Professional and encouraging. Language: Thai.`;
 
-    // 2. Initialize PPTX (Dark/Minimalist Theme)
-    let pptx = new pptxgen();
-    pptx.author = 'BAM OS v.6.1';
-    pptx.company = 'deblu Thailand';
-    pptx.title = 'Monthly Performance Report';
+        let summaryText = `Total Views: ${totalViews}\nTotal Sales: ${totalSales}\n`;
+        summaryText += `TikTok: ${platformData['TikTok'].views} views, ${platformData['TikTok'].sales} sales\n`;
+        summaryText += `Facebook: ${platformData['Facebook'].views} views, ${platformData['Facebook'].sales} sales\n`;
+        summaryText += `Instagram: ${platformData['Instagram'].views} views, ${platformData['Instagram'].sales} sales\n`;
+        summaryText += `Top 3 Posts:\n`;
+        topCards.slice(0, 3).forEach((p, i) => { summaryText += `${i+1}. ${p.title} (${p.platforms}) - Views: ${p.views}\n`; });
 
-    const bgDark = "0F172A";
-    const textWhite = "F8FAFC";
-    const textMuted = "94A3B8";
-    const accentPrimary = "3B82F6";
-    const accentSecondary = "EC4899";
-
-    // Slide 1: Cover
-    let slide1 = pptx.addSlide();
-    slide1.background = { color: bgDark };
-    slide1.addText("deblu Content OS - Monthly Performance Report", { 
-      x: 0.5, y: 2, w: 9, h: 1.5, fontSize: 32, color: textWhite, align: "center", bold: true 
-    });
-    const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    slide1.addText(currentDate, { 
-      x: 0.5, y: 3.5, w: 9, h: 1, fontSize: 18, color: textMuted, align: "center" 
-    });
-
-    // Slide 2: Executive Summary
-    let slide2 = pptx.addSlide();
-    slide2.background = { color: bgDark };
-    slide2.addText("Executive Summary", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
-    
-    slide2.addShape(pptx.ShapeType.rect, { x: 1, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
-    slide2.addText("Total Views", { x: 1, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
-    slide2.addText(totalViews.toLocaleString(), { x: 1, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentPrimary, align: "center", bold: true });
-
-    slide2.addShape(pptx.ShapeType.rect, { x: 5.5, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
-    slide2.addText("Total Sales", { x: 5.5, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
-    slide2.addText(totalSales.toLocaleString(), { x: 5.5, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentSecondary, align: "center", bold: true });
-
-    // Slide 3: Platform Comparison
-    let slide3 = pptx.addSlide();
-    slide3.background = { color: bgDark };
-    slide3.addText("Platform Comparison", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
-
-    let chartData = [
-      {
-        name: "Views",
-        labels: ["TikTok", "Facebook", "Instagram"],
-        values: [platformData['TikTok'].views, platformData['Facebook'].views, platformData['Instagram'].views]
-      },
-      {
-        name: "Sales",
-        labels: ["TikTok", "Facebook", "Instagram"],
-        values: [platformData['TikTok'].sales, platformData['Facebook'].sales, platformData['Instagram'].sales]
+        try {
+          const aiResponseRaw = await V6AI.generateCustomResponse(systemPrompt, `Here is the data:\n${summaryText}`);
+          const start = aiResponseRaw.indexOf('[');
+          const end = aiResponseRaw.lastIndexOf(']');
+          if (start !== -1 && end !== -1) {
+            aiSlides = JSON.parse(aiResponseRaw.slice(start, end + 1));
+          } else {
+            throw new Error("No JSON array found in response");
+          }
+        } catch (e) {
+          console.error("Failed to fetch or parse AI slide response:", e);
+          toast("AI Analysis failed or returned invalid format. Generating standard report instead.", "error");
+        }
       }
-    ];
 
-    slide3.addChart(pptx.ChartType.bar, chartData, { 
-      x: 0.5, y: 1.5, w: 9, h: 3.5, 
-      barDir: 'col', 
-      showLegend: true,
-      legendPos: 't',
-      legendColor: textMuted,
-      chartColors: [accentPrimary, accentSecondary],
-      valAxisLabelColor: textMuted,
-      catAxisLabelColor: textMuted,
-      valGridLine: { color: "1E293B" },
-      showValue: true,
-      valAxisLabelFormatCode: '#,##0'
-    });
+      // 2. Initialize PPTX (Dark/Minimalist Theme)
+      let pptx = new pptxgen();
+      pptx.author = 'BAM OS v.6.1';
+      pptx.company = 'deblu Thailand';
+      pptx.title = 'Monthly Performance Report';
 
-    // Slide 4: Top Performers
-    let slide4 = pptx.addSlide();
-    slide4.background = { color: bgDark };
-    slide4.addText("Top 3 Performers", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+      const bgDark = "0F172A";
+      const textWhite = "F8FAFC";
+      const textMuted = "94A3B8";
+      const accentPrimary = "3B82F6";
+      const accentSecondary = "EC4899";
 
-    let tableData = [
-      [
-        { text: "Rank", options: { bold: true, color: textWhite, fill: "1E293B" } },
-        { text: "Title", options: { bold: true, color: textWhite, fill: "1E293B" } },
-        { text: "Platform(s)", options: { bold: true, color: textWhite, fill: "1E293B" } },
-        { text: "Views", options: { bold: true, color: textWhite, fill: "1E293B", align: "right" } }
-      ]
-    ];
+      // Slide 1: Cover
+      let slide1 = pptx.addSlide();
+      slide1.background = { color: bgDark };
+      slide1.addText("deblu Content OS - Monthly Performance Report", { 
+        x: 0.5, y: 2, w: 9, h: 1.5, fontSize: 32, color: textWhite, align: "center", bold: true 
+      });
+      const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      slide1.addText(currentDate, { 
+        x: 0.5, y: 3.5, w: 9, h: 1, fontSize: 18, color: textMuted, align: "center" 
+      });
 
-    const top3 = topCards.slice(0, 3);
-    top3.forEach((post, idx) => {
-      tableData.push([
-        { text: `#${idx + 1}`, options: { color: accentSecondary, bold: true } },
-        { text: post.title, options: { color: textWhite } },
-        { text: post.platforms, options: { color: textMuted } },
-        { text: post.views.toLocaleString(), options: { color: accentPrimary, bold: true, align: "right" } }
-      ]);
-    });
+      // Slide 2: Executive Summary
+      let slide2 = pptx.addSlide();
+      slide2.background = { color: bgDark };
+      slide2.addText("Executive Summary", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+      
+      slide2.addShape(pptx.ShapeType.rect, { x: 1, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
+      slide2.addText("Total Views", { x: 1, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
+      slide2.addText(totalViews.toLocaleString(), { x: 1, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentPrimary, align: "center", bold: true });
 
-    slide4.addTable(tableData, { 
-      x: 0.5, y: 1.5, w: 9, 
-      fill: "0F172A", 
-      border: { type: "solid", color: "1E293B", pt: 1 },
-      colW: [0.8, 4.2, 2.0, 2.0],
-      fontSize: 14
-    });
+      slide2.addShape(pptx.ShapeType.rect, { x: 5.5, y: 2, w: 3.5, h: 2, fill: "1E293B", roundness: 0.1 });
+      slide2.addText("Total Sales", { x: 5.5, y: 2.2, w: 3.5, h: 0.5, fontSize: 18, color: textMuted, align: "center" });
+      slide2.addText(totalSales.toLocaleString(), { x: 5.5, y: 2.7, w: 3.5, h: 1, fontSize: 36, color: accentSecondary, align: "center", bold: true });
 
-    // Save
-    pptx.writeFile({ fileName: `deblu_Performance_Report_${new Date().toISOString().split('T')[0]}.pptx` });
+      // Slide 3: Platform Comparison
+      let slide3 = pptx.addSlide();
+      slide3.background = { color: bgDark };
+      slide3.addText("Platform Comparison", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+
+      let chartData = [
+        {
+          name: "Views",
+          labels: ["TikTok", "Facebook", "Instagram"],
+          values: [platformData['TikTok'].views, platformData['Facebook'].views, platformData['Instagram'].views]
+        },
+        {
+          name: "Sales",
+          labels: ["TikTok", "Facebook", "Instagram"],
+          values: [platformData['TikTok'].sales, platformData['Facebook'].sales, platformData['Instagram'].sales]
+        }
+      ];
+
+      slide3.addChart(pptx.ChartType.bar, chartData, { 
+        x: 0.5, y: 1.5, w: 9, h: 3.5, 
+        barDir: 'col', 
+        showLegend: true,
+        legendPos: 't',
+        legendColor: textMuted,
+        chartColors: [accentPrimary, accentSecondary],
+        valAxisLabelColor: textMuted,
+        catAxisLabelColor: textMuted,
+        valGridLine: { color: "1E293B" },
+        showValue: true,
+        valAxisLabelFormatCode: '#,##0'
+      });
+
+      // Slide 4: Top Performers
+      let slide4 = pptx.addSlide();
+      slide4.background = { color: bgDark };
+      slide4.addText("Top 3 Performers", { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: textWhite, bold: true });
+
+      let tableData = [
+        [
+          { text: "Rank", options: { bold: true, color: textWhite, fill: "1E293B" } },
+          { text: "Title", options: { bold: true, color: textWhite, fill: "1E293B" } },
+          { text: "Platform(s)", options: { bold: true, color: textWhite, fill: "1E293B" } },
+          { text: "Views", options: { bold: true, color: textWhite, fill: "1E293B", align: "right" } }
+        ]
+      ];
+
+      const top3 = topCards.slice(0, 3);
+      top3.forEach((post, idx) => {
+        tableData.push([
+          { text: `#${idx + 1}`, options: { color: accentSecondary, bold: true } },
+          { text: post.title, options: { color: textWhite } },
+          { text: post.platforms, options: { color: textMuted } },
+          { text: post.views.toLocaleString(), options: { color: accentPrimary, bold: true, align: "right" } }
+        ]);
+      });
+
+      slide4.addTable(tableData, { 
+        x: 0.5, y: 1.5, w: 9, 
+        fill: "0F172A", 
+        border: { type: "solid", color: "1E293B", pt: 1 },
+        colW: [0.8, 4.2, 2.0, 2.0],
+        fontSize: 14
+      });
+
+      // --- DYNAMIC AI SLIDES ---
+      if (aiSlides && aiSlides.length > 0) {
+        aiSlides.forEach(aiSlide => {
+          let s = pptx.addSlide();
+          s.background = { color: bgDark };
+          
+          // AI Title
+          s.addText(`🤖 ${aiSlide.title || 'AI Analysis'}`, { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 28, color: "A68CFF", bold: true });
+          
+          // AI Bullets
+          if (Array.isArray(aiSlide.bullets) && aiSlide.bullets.length > 0) {
+            let bulletText = aiSlide.bullets.map(b => ({ text: b, options: { bullet: true, color: textWhite, fontSize: 18, breakLine: true } }));
+            s.addText(bulletText, { x: 0.5, y: 1.5, w: 8, h: 3.5, valign: 'top', lineSpacing: 32 });
+          }
+        });
+      }
+
+      // Save
+      pptx.writeFile({ fileName: `deblu_Performance_Report_${new Date().toISOString().split('T')[0]}.pptx` });
+
+    } catch (err) {
+      console.error(err);
+      alert(`Error generating PPTX: ${err.message}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHTML;
+      }
+    }
   }
 
   async function generateInsights() {
@@ -637,9 +728,12 @@ ${topCards}
       
       // 5. Render result
       box.innerHTML = `
-        <div class="ai-insight-content">
+        <h3 style="margin-bottom: 12px; color: #a68cff; display: flex; align-items: center; gap: 8px;">
+          ✨ Executive Summary (AI Analysis)
+        </h3>
+        <div class="ai-insight-content" style="color: #F8FAFC; line-height: 1.6; font-size: 14px;">
           ${V6AI.formatMarkdown(result)}
-          <button class="btn-gen-insight" style="margin-top:20px; font-size:12px; padding:8px 20px; background: rgba(166,140,255,0.2); border:1px solid var(--accent-purple);" onclick="V6Layer3.generateInsights()">
+          <button class="btn btn-secondary" style="margin-top:20px; font-size:12px; padding:8px 20px;" onclick="V6Layer3.generateInsights()">
             🔄 วิเคราะห์ใหม่ (Regenerate)
           </button>
         </div>
@@ -647,6 +741,9 @@ ${topCards}
     } catch (err) {
       if (err.message === 'KEY_MISSING') {
          box.innerHTML = `
+           <h3 style="margin-bottom: 12px; color: #a68cff; display: flex; align-items: center; gap: 8px;">
+             ✨ Executive Summary
+           </h3>
            <div style="color:#ef4444; padding:20px;">
              ⚠️ ไม่พบ API Key กรุณาใส่ API Key ในหน้า Settings (Layer 0)
            </div>
