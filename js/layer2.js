@@ -282,7 +282,7 @@ window.V6Layer2 = (function () {
         const platform = row.querySelector('.perf-platform').value;
         const views = parseInt(row.querySelector('.perf-views').value) || 0;
         const conversions = parseInt(row.querySelector('.perf-conversions').value) || 0;
-        const rating = parseInt(row.querySelector('.perf-rating').value) || 0;
+        const rating = Math.min(5, Math.max(0, parseInt(row.querySelector('.perf-rating').value) || 0));
         stats.push({ platform, views, conversions, rating });
       });
       updates.performanceStats = stats;
@@ -352,7 +352,19 @@ window.V6Layer2 = (function () {
       const result = await V6AI.generateToolResponse(toolId, 'Magic Content Analysis', text);
       
       const lines = result.split('\n').filter(l => l.trim().length > 5);
-      const score = Math.floor(Math.random() * 15) + 80; // Still semi-random score but based on real feedback
+
+      // Derive score from AI response quality instead of random
+      const scoreMatch = result.match(/(\d{1,3})\s*(\/100|%|คะแนน|score|points)/i);
+      let score;
+      if (scoreMatch) {
+        score = Math.min(100, Math.max(0, parseInt(scoreMatch[1])));
+      } else {
+        // Deterministic score from AI feedback quality
+        const positiveWords = (result.match(/ดี|เยี่ยม|สมบูรณ์|great|good|excellent|strong|effective|perfect|impressive/gi) || []).length;
+        const negativeWords = (result.match(/ควรปรับ|ข้อเสีย|weak|missing|improve|lacks|poor/gi) || []).length;
+        const baseScore = 75;
+        score = Math.min(99, Math.max(60, baseScore + (positiveWords * 3) - (negativeWords * 4)));
+      }
       
       scoreEl.textContent = score;
       let color = '#4ade80';

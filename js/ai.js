@@ -71,7 +71,7 @@ window.V6AI = (function () {
   }
 
   /* ─── Gemini API Call ─── */
-  async function callGemini(apiKey, systemPrompt, userPrompt) {
+  async function callGemini(apiKey, systemPrompt, userPrompt, layerKey) {
     const directApiKey = localStorage.getItem('v6_settings_apiKey');
     if (!directApiKey) {
       alert("❌ Security Alert: API Key is missing. Please enter your Gemini API Key in the Settings (Layer 0) before using AI features.");
@@ -79,8 +79,8 @@ window.V6AI = (function () {
     }
 
     const map = V6Store.getLayerModels();
-    // Default to Layer 0 if available, then global config geminiModel, then hardcode
-    let model = map.layer0 || V6_CONFIG.geminiModel || 'gemini-1.5-pro';
+    // Use specified layer model, falling back to layer0 → config → hardcode
+    let model = map[layerKey || 'layer0'] || map.layer0 || V6_CONFIG.geminiModel || 'gemini-1.5-pro';
     model = model.replace('models/', '');
     const isDeepThinking = V6Store.getDeepThinkingMode();
 

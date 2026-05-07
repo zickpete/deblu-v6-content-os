@@ -766,20 +766,37 @@ ${topCards}
       `;
     } catch (err) {
       if (err.message === 'KEY_MISSING') {
+         // Mock fallback: generate sample insight from real data
+         const topPlatform = Object.entries(stats.platforms).sort((a, b) => b[1].views - a[1].views)[0];
+         const mockInsight = `
+### 📊 ภาพรวมประสิทธิภาพ (Demo Mode)
+- คอนเทนต์ทั้งหมด **${stats.totalCards}** ชิ้น มียอดวิวรวม **${stats.totalViews.toLocaleString()}** ครั้ง
+- ยอดขายรวม **${stats.totalConversions.toLocaleString()}** รายการ
+- แพลตฟอร์มที่ทำได้ดีที่สุด: **${topPlatform ? topPlatform[0] : 'N/A'}**
+
+### 💡 คำแนะนำ
+- *เพิ่ม API Key ในหน้า Settings เพื่อรับการวิเคราะห์เชิงลึกจาก AI*
+- ลองเพิ่มคอนเทนต์ในแพลตฟอร์มที่ยังมี engagement ต่ำ
+- ติดตามข้อมูลอย่างสม่ำเสมอเพื่อเปรียบเทียบแนวโน้ม
+         `;
          box.innerHTML = `
            <h3 style="margin-bottom: 12px; color: #a68cff; display: flex; align-items: center; gap: 8px;">
-             ✨ Executive Summary
+             ✨ Executive Summary (Demo — ใส่ API Key เพื่อใช้ AI จริง)
            </h3>
-           <div style="color:#ef4444; padding:20px;">
-             ⚠️ ไม่พบ API Key กรุณาใส่ API Key ในหน้า Settings (Layer 0)
+           <div class="ai-insight-content" style="color: #F8FAFC; line-height: 1.6; font-size: 14px;">
+             ${V6AI.formatMarkdown(mockInsight)}
+             <button class="btn btn-secondary" style="margin-top:20px; font-size:12px; padding:8px 20px;" onclick="V6Layer3.generateInsights()">
+               🔄 วิเคราะห์ใหม่ (Regenerate)
+             </button>
            </div>
          `;
       } else {
         toast(`Error: ${err.message}`, 'error');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `✨ วิเคราะห์ข้อมูล (Generate Insights)`;
-        }
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `✨ วิเคราะห์ข้อมูล (Generate Insights)`;
       }
     }
   }
