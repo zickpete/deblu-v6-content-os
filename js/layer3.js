@@ -693,11 +693,11 @@ Generate 2 to 4 highly professional, analytical slides based on the provided dat
     const box = $('aiInsightBox');
     const btn = $('genInsightBtn');
     
-    // 1. Get current stats
-    const cards = V6Store.getCards();
-    const stats = calculateStats(cards);
+    const cards = V6Store.listAllCards();
+    const cardsWithPerf = cards.filter(c => (c.performanceStats && c.performanceStats.length > 0) || (c.performance && c.performance.platform));
+    const stats = computeStats(cardsWithPerf);
     
-    if (cards.length === 0) {
+    if (cardsWithPerf.length === 0) {
       toast('ไม่มีข้อมูลสำหรับวิเคราะห์', 'error');
       return;
     }
@@ -710,7 +710,7 @@ Generate 2 to 4 highly professional, analytical slides based on the provided dat
     
     // 3. Prepare data for AI
     const platformsText = Object.entries(stats.platforms).map(([p, s]) => 
-      `- ${p}: ${s.views} views, ${s.conversions} conversions, Avg Rating: ${(s.totalRating / s.ratingCount || 0).toFixed(1)}`
+      `- ${p}: ${s.views} views, ${s.conversions} conversions, Avg Rating: ${s.ratingCount > 0 ? (s.totalRating / s.ratingCount).toFixed(1) : 'N/A'}`
     ).join('\n');
 
     const topCards = cards
