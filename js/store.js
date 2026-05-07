@@ -125,13 +125,24 @@ window.V6Store = (function () {
     return result;
   }
 
+  /* ─── Get Single Card by ID (for Layer 3 detail modal) ─── */
+  function getCard(cardId) {
+    const allCards = listAllCards();
+    return allCards.find(c => c.id === cardId) || null;
+  }
+
   /* ─── Settings ─── */
   function saveApiKey(key) { localStorage.setItem(API_KEY_KEY, key); syncSettings(); }
   function getApiKey() { return localStorage.getItem(API_KEY_KEY); }
-  function saveLayerModels(map) { localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(map)); syncSettings(); }
+  function saveLayerModels(map) {
+    localStorage.setItem(LAYER_MODELS_KEY, JSON.stringify(map));
+    console.log('Layer 3 Model Saved:', map.layer3 || 'NOT SET');
+    console.log('[V6Store] All Layer Models Saved:', JSON.stringify(map));
+    syncSettings();
+  }
   function getLayerModels() { 
-    try { return JSON.parse(localStorage.getItem(LAYER_MODELS_KEY)) || { layer0: 'gemini-1.5-pro', layer1: 'gemini-1.5-flash', layer2: 'gemini-1.5-flash' }; }
-    catch(e) { return { layer0: 'gemini-1.5-pro', layer1: 'gemini-1.5-flash', layer2: 'gemini-1.5-flash' }; }
+    try { return JSON.parse(localStorage.getItem(LAYER_MODELS_KEY)) || { layer0: 'gemini-1.5-pro', layer1: 'gemini-1.5-flash', layer2: 'gemini-1.5-flash', layer3: 'gemini-1.5-flash' }; }
+    catch(e) { return { layer0: 'gemini-1.5-pro', layer1: 'gemini-1.5-flash', layer2: 'gemini-1.5-flash', layer3: 'gemini-1.5-flash' }; }
   }
   function saveDeepThinkingMode(isDeep) { localStorage.setItem(THINKING_KEY, isDeep ? 'true' : 'false'); syncSettings(); }
   function getDeepThinkingMode() { return localStorage.getItem(THINKING_KEY) === 'true'; }
@@ -266,7 +277,7 @@ window.V6Store = (function () {
     saveDeepThinkingMode, getDeepThinkingMode,
     saveProductReference, getProductReference,
     saveCalendar, getCalendar, updateCard, deleteCard, lockCalendar,
-    listAllCards,
+    listAllCards, getCard,
     initFirestoreSync, getSyncStatus
   };
 })();

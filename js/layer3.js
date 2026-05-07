@@ -297,6 +297,7 @@ window.V6Layer3 = (function () {
 
     const top = sorted.slice(0, 10);
 
+    // Build HTML with data attributes instead of inline onclick
     listEl.innerHTML = top.map((agg, i) => {
       const { card, totalViews, totalConversions, platforms, avgRating } = agg;
       const name = card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
@@ -306,7 +307,7 @@ window.V6Layer3 = (function () {
       const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
 
       return `
-        <li class="l3-tp-item" role="button" tabindex="0" onclick="V6Layer3.showPostDetails('${card.id}')">
+        <li class="l3-tp-item" role="button" tabindex="0" data-card-id="${escapeHtml(card.id)}">
           <div class="l3-tp-rank ${rankClass}">${rankLabel}</div>
           <div class="l3-tp-info">
             <div class="l3-tp-name">${escapeHtml(name)}</div>
@@ -324,6 +325,31 @@ window.V6Layer3 = (function () {
         </li>
       `;
     }).join('');
+
+    // ── Attach explicit click event listeners to each Top Performer ──
+    listEl.querySelectorAll('.l3-tp-item').forEach(item => {
+      const cardId = item.getAttribute('data-card-id');
+      item.addEventListener('click', function () {
+        const cardData = {
+          cardId: cardId,
+          title: item.querySelector('.l3-tp-name')?.textContent || 'Unknown',
+          views: item.querySelector('.l3-tp-meta span:nth-child(2)')?.textContent || '0',
+          sales: item.querySelector('.l3-tp-metric-value')?.textContent || '0'
+        };
+        console.log('Top Performer Clicked:', cardData);
+        showPostDetails(cardId);
+      });
+
+      // Also support Enter/Space for keyboard accessibility
+      item.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
+    });
+
+    console.log('[Layer3] Top Performers rendered:', top.length, 'items with click listeners attached');
   }
 
   /* ─── Helpers ─── */
@@ -762,10 +788,21 @@ ${topCards}
     renderDashboard();
   }
 
+  /* ─── Card Lookup Fallback ─── */
+  function findCardById(cardId) {
+    const allCards = V6Store.listAllCards();
+    return allCards.find(c => c.id === cardId) || null;
+  }
+
   /* ─── Modal Functions ─── */
   function showPostDetails(cardId) {
-    const card = V6Store.getCard(cardId);
-    if (!card) return;
+    console.log('[Layer3] showPostDetails called with cardId:', cardId);
+    const card = V6Store.getCard ? V6Store.getCard(cardId) : findCardById(cardId);
+    if (!card) {
+      console.warn('[Layer3] Card not found for id:', cardId);
+      return;
+    }
+    console.log('[Layer3] Card found:', { id: card.id, title: card.customTitle || card.meta_headline || 'Untitled' });
 
     // 1. Title
     const finalTitle = card.customTitle || card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';

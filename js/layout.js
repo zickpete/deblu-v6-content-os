@@ -146,6 +146,7 @@ class V6Header extends HTMLElement {
         const activeLayer = this.getAttribute('active-layer') || '0';
         const modelId = map['layer' + activeLayer] || '';
         const cleanModelName = getCleanModelName(modelId);
+        console.log('[V6Header] Badge Update — Layer:', activeLayer, '| Model:', modelId, '| Display:', cleanModelName);
 
         if (hasKey) {
           badge.className = 'ai-status-badge live';
