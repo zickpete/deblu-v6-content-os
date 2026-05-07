@@ -306,7 +306,7 @@ window.V6Layer3 = (function () {
       const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
 
       return `
-        <li class="l3-tp-item">
+        <li class="l3-tp-item" onclick="V6Layer3.showPostDetails('${card.id}')">
           <div class="l3-tp-rank ${rankClass}">${rankLabel}</div>
           <div class="l3-tp-info">
             <div class="l3-tp-name">${escapeHtml(name)}</div>
@@ -762,6 +762,73 @@ ${topCards}
     renderDashboard();
   }
 
+  /* ─── Modal Functions ─── */
+  function showPostDetails(cardId) {
+    const card = V6Store.getCard(cardId);
+    if (!card) return;
+
+    // 1. Title
+    const finalTitle = card.customTitle || card.meta_headline || card.suggested_topic || card.topic_th || card.topic_en || 'Untitled';
+    $('l3DetailTitle').textContent = finalTitle;
+
+    // 2. Content
+    $('l3DetailContent').textContent = card.postContent || card.caption || card.description || 'ไม่มีเนื้อหา (No content provided)';
+
+    // 3. Stats Summary
+    let statsArray = card.performanceStats || [];
+    if (statsArray.length === 0 && card.performance && card.performance.platform) {
+      statsArray = [card.performance];
+    }
+    
+    let statsHtml = '';
+    if (statsArray.length === 0) {
+      statsHtml = 'ไม่มีข้อมูลสถิติ (No performance data)';
+    } else {
+      statsArray.forEach(p => {
+        statsHtml += `
+          <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <strong style="color: #e2e8f0;">📱 ${escapeHtml(p.platform || 'Other')}</strong><br/>
+            👁️ Views: ${(Number(p.views) || 0).toLocaleString()} &nbsp;|&nbsp; 
+            💰 Sales: ${(Number(p.conversions) || 0).toLocaleString()} &nbsp;|&nbsp; 
+            ⭐ Rating: ${p.rating ? renderStars(Number(p.rating)) : 'ไม่มี'}
+          </div>
+        `;
+      });
+    }
+    $('l3DetailStats').innerHTML = statsHtml;
+
+    // 4. Show Modal
+    const overlay = $('l3DetailOverlay');
+    const modal = $('l3DetailModal');
+    if (overlay) {
+      overlay.classList.add('open');
+      overlay.style.display = 'block';
+    }
+    if (modal) modal.style.display = 'block';
+    document.body.classList.add('modal-active');
+    
+    // Add temporary Escape listener
+    document.addEventListener('keydown', handleEscapeKey);
+  }
+
+  function handleEscapeKey(e) {
+    if (e.key === 'Escape') {
+      closePostDetails();
+    }
+  }
+
+  function closePostDetails() {
+    const overlay = $('l3DetailOverlay');
+    const modal = $('l3DetailModal');
+    if (overlay) {
+      overlay.classList.remove('open');
+      overlay.style.display = 'none';
+    }
+    if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-active');
+    document.removeEventListener('keydown', handleEscapeKey);
+  }
+
   /* ─── Boot ─── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -772,5 +839,5 @@ ${topCards}
   // Re-render on cloud sync
   window.addEventListener('v6:cloudSync', () => { setTimeout(renderDashboard, 500); });
 
-  return { init, exportPDF, exportCSV, exportPNG, exportToPPTX, refresh, generateInsights };
+  return { init, exportPDF, exportCSV, exportPNG, exportToPPTX, refresh, generateInsights, showPostDetails, closePostDetails };
 })();
